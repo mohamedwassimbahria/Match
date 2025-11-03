@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/config-server" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/discovery" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/gateway" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/microBillet" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/microClub" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/microCompetition" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/microJoueur" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/microLocal" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/microMatch" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/microStaff" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/microTransfert" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/microUser" vcs="Git" />
+  </component>
+</project>
