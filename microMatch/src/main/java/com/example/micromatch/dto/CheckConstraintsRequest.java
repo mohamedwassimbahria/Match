@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CreatePlanificationRequest {
+public class CheckConstraintsRequest {
     private String matchId;
-    private LocalDateTime datePropose;
+    private LocalDateTime date;
 }
