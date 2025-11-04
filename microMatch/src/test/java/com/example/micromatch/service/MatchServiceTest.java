@@ -1,6 +1,8 @@
 package com.example.micromatch.service;
 
 import com.example.micromatch.entity.Match;
+import com.example.micromatch.enums.EventType;
+import com.example.micromatch.enums.MatchPhase;
 import com.example.micromatch.enums.MatchStatus;
 import com.example.micromatch.repository.MatchRepository;
 import org.junit.jupiter.api.Test;
@@ -8,21 +10,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 class MatchServiceTest {
 
     @Mock
     private MatchRepository matchRepository;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private MatchService matchService;
@@ -31,10 +39,20 @@ class MatchServiceTest {
     void createMatch() {
         Match match = new Match();
         match.setId("1");
+        match.setTeam1Id("1");
+        match.setTeam2Id("2");
         match.setStatus(MatchStatus.SCHEDULED.name());
+        match.setMatchPhase(MatchPhase.PRE_MATCH);
+        match.setScore(new HashMap<>());
+        match.getScore().put("1", 0);
+        match.getScore().put("2", 0);
         when(matchRepository.save(any(Match.class))).thenReturn(match);
         Match created = matchService.createMatch("1", "2", LocalDateTime.now());
         assertEquals(MatchStatus.SCHEDULED.name(), created.getStatus());
+        assertEquals(MatchPhase.PRE_MATCH, created.getMatchPhase());
+        assertEquals(0, created.getScore().get("1"));
+        assertEquals(0, created.getScore().get("2"));
+        verify(notificationService).sendNotification("Match created between 1 and 2");
     }
 
     @Test
@@ -46,5 +64,72 @@ class MatchServiceTest {
         when(matchRepository.save(any(Match.class))).thenReturn(match);
         Match started = matchService.startMatch("1");
         assertEquals(MatchStatus.LIVE.name(), started.getStatus());
+        assertEquals(MatchPhase.FIRST_HALF, started.getMatchPhase());
+        verify(notificationService).sendNotification("Match 1 has started");
+    }
+
+    @Test
+    void addGoalEvent() {
+        Match match = new Match();
+        match.setId("1");
+        match.setTeam1Id("1");
+        match.setTeam2Id("2");
+        match.setScore(new HashMap<>());
+        match.getScore().put("1", 0);
+        match.getScore().put("2", 0);
+        match.setEvents(new ArrayList<>());
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        Match.Event goal = new Match.Event(null, 45, EventType.GOAL.name(), "1", null, "Goal by Player 10");
+        Match updated = matchService.addEvent("1", goal);
+
+        assertEquals(1, updated.getScore().get("1"));
+        assertEquals(1, updated.getEvents().size());
+        verify(notificationService).sendNotification("Goal scored in match 1 by team 1");
+    }
+
+    @Test
+    void defineLineup() {
+        Match match = new Match();
+        match.setId("1");
+        match.setTeam1Id("1");
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        List<String> lineup = List.of("p1", "p2", "p3");
+        Match updated = matchService.defineLineup("1", "1", lineup);
+
+        assertEquals(lineup, updated.getTeam1Lineup());
+    }
+
+    @Test
+    void recordCollectiveStats() {
+        Match match = new Match();
+        match.setId("1");
+        match.setTeam1Id("1");
+        match.setCollectiveStats(new HashMap<>());
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("possession", 60);
+        Match updated = matchService.recordCollectiveStats("1", "1", stats);
+
+        assertEquals(stats, updated.getCollectiveStats().get("1"));
+    }
+
+    @Test
+    void addMedia() {
+        Match match = new Match();
+        match.setId("1");
+        match.setMedia(new ArrayList<>());
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        Match.Media media = new Match.Media(null, "PHOTO", "http://example.com/photo.jpg", "Match Photo");
+        Match updated = matchService.addMedia("1", media);
+
+        assertEquals(1, updated.getMedia().size());
     }
 }
