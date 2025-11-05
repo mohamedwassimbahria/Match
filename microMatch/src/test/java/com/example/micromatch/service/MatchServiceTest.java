@@ -132,4 +132,105 @@ class MatchServiceTest {
 
         assertEquals(1, updated.getMedia().size());
     }
+
+    @Test
+    void assignMainReferee() {
+        Match match = new Match();
+        match.setId("1");
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        Match updated = matchService.assignMainReferee("1", "John Doe");
+
+        assertEquals("John Doe", updated.getMainReferee());
+    }
+
+    @Test
+    void assignAssistantReferees() {
+        Match match = new Match();
+        match.setId("1");
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        List<String> assistants = List.of("Assistant 1", "Assistant 2");
+        Match updated = matchService.assignAssistantReferees("1", assistants);
+
+        assertEquals(assistants, updated.getAssistantReferees());
+    }
+
+    @Test
+    void assignFourthOfficial() {
+        Match match = new Match();
+        match.setId("1");
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        Match updated = matchService.assignFourthOfficial("1", "Fourth Official");
+
+        assertEquals("Fourth Official", updated.getFourthOfficial());
+    }
+
+    @Test
+    void assignVarReferees() {
+        Match match = new Match();
+        match.setId("1");
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        List<String> var = List.of("VAR 1", "VAR 2");
+        Match updated = matchService.assignVarReferees("1", var);
+
+        assertEquals(var, updated.getVarReferees());
+    }
+
+    @Test
+    void addAdditionalTime() {
+        Match match = new Match();
+        match.setId("1");
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        Match updated = matchService.addAdditionalTime("1", 5);
+
+        assertEquals(5, updated.getAdditionalTime());
+    }
+
+    @Test
+    void getScoreHistory() {
+        Match match = new Match();
+        match.setId("1");
+        match.setTeam1Id("1");
+        match.setTeam2Id("2");
+        match.setScore(new HashMap<>());
+        match.getScore().put("1", 0);
+        match.getScore().put("2", 0);
+        match.setEvents(new ArrayList<>());
+        Match.Event goal1 = new Match.Event(null, 30, EventType.GOAL.name(), "1", null, "Goal");
+        Match.Event goal2 = new Match.Event(null, 60, EventType.GOAL.name(), "2", null, "Goal");
+        match.getEvents().add(goal1);
+        match.getEvents().add(goal2);
+
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+
+        Map<Integer, Map<String, Integer>> scoreHistory = matchService.getScoreHistory("1");
+
+        assertEquals(3, scoreHistory.size());
+        assertEquals(0, scoreHistory.get(0).get("1"));
+        assertEquals(1, scoreHistory.get(30).get("1"));
+        assertEquals(1, scoreHistory.get(60).get("2"));
+    }
+
+    @Test
+    void addArbitralDecision() {
+        Match match = new Match();
+        match.setId("1");
+        match.setDecisions(new ArrayList<>());
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        Match.ArbitralDecision decision = new Match.ArbitralDecision(null, 75, "YELLOW_CARD", "Foul");
+        Match updated = matchService.addArbitralDecision("1", decision);
+
+        assertEquals(1, updated.getDecisions().size());
+    }
 }

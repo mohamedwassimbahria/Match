@@ -35,6 +35,8 @@ public class Match {
 
     private String mainReferee;
     private List<String> assistantReferees;
+    private String fourthOfficial;
+    private List<String> varReferees;
     private String team1Coach;
     private String team2Coach;
 
@@ -52,6 +54,10 @@ public class Match {
     private List<PlayerStats> individualStats;
 
     private List<Media> media;
+
+    private Integer additionalTime;
+
+    private List<ArbitralDecision> decisions;
 
     @Data
     @NoArgsConstructor
@@ -82,6 +88,16 @@ public class Match {
         private String type; // "PHOTO", "VIDEO", "INTERVIEW"
         private String url;
         private String title;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ArbitralDecision {
+        private String id;
+        private int minute;
+        private String decision;
+        private String description;
     }
 
     public static final List<String> TUNISIAN_REFEREES = Arrays.asList(
