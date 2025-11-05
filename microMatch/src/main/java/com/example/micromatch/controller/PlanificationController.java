@@ -119,4 +119,94 @@ public class PlanificationController {
     public Planification setPostMatchPressConference(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
         return planificationService.setPostMatchPressConference(id, request.getPostMatchPressConference());
     }
+
+    @PostMapping("/{id}/proposals")
+    public Planification generateDateProposals(@PathVariable String id) {
+        return planificationService.generateDateProposals(id);
+    }
+
+    @PutMapping("/{id}/validate")
+    public Planification validatePlanning(@PathVariable String id) {
+        return planificationService.validatePlanning(id);
+    }
+
+    @PutMapping("/{id}/datetime")
+    public Planification updateMatchDateTime(@PathVariable String id, @RequestBody UpdateMatchDateTimeRequest request) {
+        return planificationService.updateMatchDateTime(id, request.getNewDateTime());
+    }
+
+    @GetMapping("/{id}/rest-period")
+    public String checkTeamRestPeriod(@PathVariable String id) {
+        return planificationService.checkTeamRestPeriod(id);
+    }
+
+    @GetMapping("/{id}/calendar-conflicts")
+    public Planification checkCalendarConflicts(@PathVariable String id) {
+        return planificationService.checkCalendarConflicts(id);
+    }
+
+    @GetMapping("/{id}/tv-constraints")
+    public Planification checkTvConstraints(@PathVariable String id) {
+        return planificationService.checkTvConstraints(id);
+    }
+
+    @GetMapping("/{id}/best-date")
+    public java.time.LocalDateTime proposeBestAvailableDate(@PathVariable String id) {
+        return planificationService.proposeBestAvailableDate(id);
+    }
+
+    @GetMapping("/{id}/alternatives")
+    public List<java.time.LocalDateTime> suggestAlternatives(@PathVariable String id) {
+        return planificationService.suggestAlternatives(id);
+    }
+
+    @PutMapping("/{id}/submit")
+    public Planification submitForValidation(@PathVariable String id) {
+        return planificationService.submitForValidation(id);
+    }
+
+    @PutMapping("/{id}/approve")
+    public Planification approvePlanification(@PathVariable String id) {
+        return planificationService.approvePlanification(id);
+    }
+
+    @PutMapping("/{id}/reject")
+    public Planification rejectPlanification(@PathVariable String id, @RequestBody RejectPlanificationRequest request) {
+        return planificationService.rejectPlanification(id, request.getReason());
+    }
+
+    @PutMapping("/{id}/request-modification")
+    public Planification requestModification(@PathVariable String id, @RequestBody RequestModificationRequest request) {
+        return planificationService.requestModification(id, request.getReason());
+    }
+
+    @PostMapping("/{id}/notify-stakeholders")
+    public void notifyStakeholders(@PathVariable String id, @RequestBody String message) {
+        planificationService.notifyStakeholders(id, message);
+    }
+
+    @PutMapping("/{id}/warm-ups")
+    public Planification planWarmUps(@PathVariable String id, @RequestBody PlanWarmUpsRequest request) {
+        return planificationService.planWarmUps(id, request.getWarmUps());
+    }
+
+    @GetMapping("/{id}/calendar-impact")
+    public String analyzeGlobalCalendarImpact(@PathVariable String id) {
+        return planificationService.analyzeGlobalCalendarImpact(id);
+    }
+
+    @PutMapping("/{id}/lock")
+    public Planification lockPlanning(@PathVariable String id) {
+        return planificationService.lockPlanning(id);
+    }
+
+    @PostMapping("/championship")
+    public String planChampionship(@RequestBody PlanChampionshipRequest request) {
+        return planificationService.planChampionship(request.getTeamIds());
+    }
+
+    @PutMapping("/{id}/mark-confirmed")
+    public Planification markAsConfirmed(@PathVariable String id) {
+        return planificationService.markAsConfirmed(id);
+    }
 }

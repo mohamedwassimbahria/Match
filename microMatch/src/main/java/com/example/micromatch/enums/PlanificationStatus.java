@@ -4,5 +4,9 @@ public enum PlanificationStatus {
     PROPOSED,
     CONFIRMED,
     MODIFIED,
-    CANCELLED
+    CANCELLED,
+    SUBMITTED_FOR_VALIDATION,
+    APPROVED,
+    REJECTED,
+    MODIFICATION_REQUESTED
 }

@@ -191,4 +191,132 @@ public class PlanificationServiceTest {
 
         assertEquals("At 9 PM", updated.getPostMatchPressConference());
     }
+
+    @Test
+    void generateDateProposals() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        planification.setDatePropose(LocalDateTime.now());
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.generateDateProposals("1");
+
+        assertEquals(2, updated.getAlternativeDates().size());
+    }
+
+    @Test
+    void validatePlanning() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.validatePlanning("1");
+
+        assertEquals(true, updated.isValidated());
+    }
+
+    @Test
+    void updateMatchDateTime() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        planification.setHistoriqueModifications(new ArrayList<>());
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        LocalDateTime newDateTime = LocalDateTime.now().plusDays(5);
+        Planification updated = planificationService.updateMatchDateTime("1", newDateTime);
+
+        assertEquals(newDateTime, updated.getDatePropose());
+    }
+
+    @Test
+    void submitForValidation() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.submitForValidation("1");
+
+        assertEquals("SUBMITTED_FOR_VALIDATION", updated.getStatut());
+    }
+
+    @Test
+    void approvePlanification() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.approvePlanification("1");
+
+        assertEquals("APPROVED", updated.getStatut());
+    }
+
+    @Test
+    void rejectPlanification() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        planification.setHistoriqueModifications(new ArrayList<>());
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.rejectPlanification("1", "Logistical issues");
+
+        assertEquals("REJECTED", updated.getStatut());
+    }
+
+    @Test
+    void planWarmUps() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        List<Planification.WarmUp> warmUps = new ArrayList<>();
+        warmUps.add(new Planification.WarmUp("team1", LocalDateTime.now(), 30));
+        Planification updated = planificationService.planWarmUps("1", warmUps);
+
+        assertEquals(warmUps, updated.getWarmUps());
+    }
+
+    @Test
+    void lockPlanning() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        planification.setDatePropose(LocalDateTime.now().plusDays(1));
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.lockPlanning("1");
+
+        assertEquals(true, updated.isPlanningLocked());
+    }
+
+    @Test
+    void requestModification() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        planification.setHistoriqueModifications(new ArrayList<>());
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.requestModification("1", "Venue unavailable");
+
+        assertEquals("MODIFICATION_REQUESTED", updated.getStatut());
+    }
+
+    @Test
+    void markAsConfirmed() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.markAsConfirmed("1");
+
+        assertEquals("CONFIRMED", updated.getStatut());
+    }
 }
