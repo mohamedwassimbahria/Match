@@ -95,29 +95,9 @@ public class PlanificationController {
         return planificationService.findCatchUpDate(id, request.getCatchUpDate(), request.getReasonForChange());
     }
 
-    @PutMapping("/{id}/entry-protocol")
-    public Planification setEntryProtocol(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
-        return planificationService.setEntryProtocol(id, request.getEntryProtocol());
-    }
-
-    @PutMapping("/{id}/security-checks")
-    public Planification setSecurityChecks(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
-        return planificationService.setSecurityChecks(id, request.getSecurityChecks());
-    }
-
-    @PutMapping("/{id}/anti-doping-control")
-    public Planification setAntiDopingControl(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
-        return planificationService.setAntiDopingControl(id, request.getAntiDopingControl());
-    }
-
-    @PutMapping("/{id}/mixed-zone-interviews")
-    public Planification setMixedZoneInterviews(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
-        return planificationService.setMixedZoneInterviews(id, request.getMixedZoneInterviews());
-    }
-
-    @PutMapping("/{id}/post-match-press-conference")
-    public Planification setPostMatchPressConference(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
-        return planificationService.setPostMatchPressConference(id, request.getPostMatchPressConference());
+    @PutMapping("/{id}/details")
+    public Planification updatePlanificationDetails(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
+        return planificationService.updatePlanificationDetails(id, request);
     }
 
     @PostMapping("/{id}/proposals")
@@ -171,12 +151,12 @@ public class PlanificationController {
     }
 
     @PutMapping("/{id}/reject")
-    public Planification rejectPlanification(@PathVariable String id, @RequestBody RejectPlanificationRequest request) {
+    public Planification rejectPlanification(@PathVariable String id, @RequestBody ReasonRequest request) {
         return planificationService.rejectPlanification(id, request.getReason());
     }
 
     @PutMapping("/{id}/request-modification")
-    public Planification requestModification(@PathVariable String id, @RequestBody RequestModificationRequest request) {
+    public Planification requestModification(@PathVariable String id, @RequestBody ReasonRequest request) {
         return planificationService.requestModification(id, request.getReason());
     }
 

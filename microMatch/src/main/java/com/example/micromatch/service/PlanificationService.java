@@ -4,6 +4,7 @@ import com.example.micromatch.entity.Planification;
 import com.example.micromatch.enums.PlanificationStatus;
 import com.example.micromatch.exception.ResourceNotFoundException;
 import com.example.micromatch.repository.PlanificationRepository;
+import com.example.micromatch.entity.Match;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class PlanificationService {
 
     private final PlanificationRepository planificationRepository;
     private final NotificationService notificationService;
+    private final com.example.micromatch.repository.MatchRepository matchRepository;
 
     public Planification createPlanification(String matchId, LocalDateTime datePropose) {
         Planification planification = Planification.builder()
@@ -164,33 +166,23 @@ public class PlanificationService {
         return planificationRepository.save(planification);
     }
 
-    public Planification setEntryProtocol(String planificationId, String entryProtocol) {
+    public Planification updatePlanificationDetails(String planificationId, com.example.micromatch.dto.UpdatePlanificationDetailsRequest request) {
         Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
-        planification.setEntryProtocol(entryProtocol);
-        return planificationRepository.save(planification);
-    }
-
-    public Planification setSecurityChecks(String planificationId, String securityChecks) {
-        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
-        planification.setSecurityChecks(securityChecks);
-        return planificationRepository.save(planification);
-    }
-
-    public Planification setAntiDopingControl(String planificationId, String antiDopingControl) {
-        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
-        planification.setAntiDopingControl(antiDopingControl);
-        return planificationRepository.save(planification);
-    }
-
-    public Planification setMixedZoneInterviews(String planificationId, String mixedZoneInterviews) {
-        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
-        planification.setMixedZoneInterviews(mixedZoneInterviews);
-        return planificationRepository.save(planification);
-    }
-
-    public Planification setPostMatchPressConference(String planificationId, String postMatchPressConference) {
-        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
-        planification.setPostMatchPressConference(postMatchPressConference);
+        if (request.getEntryProtocol() != null) {
+            planification.setEntryProtocol(request.getEntryProtocol());
+        }
+        if (request.getSecurityChecks() != null) {
+            planification.setSecurityChecks(request.getSecurityChecks());
+        }
+        if (request.getAntiDopingControl() != null) {
+            planification.setAntiDopingControl(request.getAntiDopingControl());
+        }
+        if (request.getMixedZoneInterviews() != null) {
+            planification.setMixedZoneInterviews(request.getMixedZoneInterviews());
+        }
+        if (request.getPostMatchPressConference() != null) {
+            planification.setPostMatchPressConference(request.getPostMatchPressConference());
+        }
         return planificationRepository.save(planification);
     }
 
@@ -220,27 +212,83 @@ public class PlanificationService {
     }
 
     public String checkTeamRestPeriod(String planificationId) {
-        // Placeholder for real calculation
+        // Simplified logic: assumes a fixed rest period of 3 days.
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        // A real implementation would need to check the last match date for both teams.
+        if (planification.getTeam1MinRestDays() < 3 || planification.getTeam2MinRestDays() < 3) {
+            return "One or both teams do not have the minimum rest period.";
+        }
         return "Minimum rest period check passed";
     }
 
     public Planification checkCalendarConflicts(String planificationId) {
         Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
-        // Placeholder for real conflict check
-        planification.setCalendarConflict("No conflicts found");
+        // Simplified logic: checks for other matches on the same day.
+        List<Match> otherMatches = matchRepository.findByDate(planification.getDatePropose());
+        if (otherMatches.size() > 1) { // 1 being the current match
+            planification.setCalendarConflict("Conflict: another match is scheduled on the same day.");
+        } else {
+            planification.setCalendarConflict("No conflicts found");
+        }
         return planificationRepository.save(planification);
     }
 
     public Planification checkTvConstraints(String planificationId) {
         Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
-        // Placeholder for real TV constraint check
-        planification.setTvConstraint("No TV constraints");
+        // Simplified logic: checks if the match is on a weekend.
+        if (planification.getDatePropose().getDayOfWeek().getValue() >= 6) { // Saturday or Sunday
+            planification.setTvConstraint("No TV constraints");
+        } else {
+            planification.setTvConstraint("Potential TV constraint: match is on a weekday.");
+        }
         return planificationRepository.save(planification);
     }
 
     public LocalDateTime proposeBestAvailableDate(String planificationId) {
-        // Placeholder for optimization algorithm
-        return LocalDateTime.now().plusWeeks(1);
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        List<LocalDateTime> possibleDates = new ArrayList<>();
+        possibleDates.add(planification.getDatePropose());
+        if (planification.getAlternativeDates() != null) {
+            possibleDates.addAll(planification.getAlternativeDates());
+        }
+
+        LocalDateTime bestDate = null;
+        int bestScore = -1;
+
+        for (LocalDateTime date : possibleDates) {
+            int score = 0;
+            // Simplified scoring logic. A real implementation would be much more complex.
+            if (isStadiumAvailable(date)) {
+                score += 10;
+            }
+            if (isTvBlackout(date)) {
+                score -= 5;
+            }
+            if (isInternationalBreak(date)) {
+                score -= 10;
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestDate = date;
+            }
+        }
+        return bestDate;
+    }
+
+    private boolean isStadiumAvailable(LocalDateTime date) {
+        // Placeholder
+        return true;
+    }
+
+    private boolean isTvBlackout(LocalDateTime date) {
+        // Placeholder
+        return false;
+    }
+
+    private boolean isInternationalBreak(LocalDateTime date) {
+        // Placeholder
+        return false;
     }
 
     public List<LocalDateTime> suggestAlternatives(String planificationId) {
@@ -317,7 +365,29 @@ public class PlanificationService {
     }
 
     public String planChampionship(List<String> teamIds) {
-        // Placeholder for championship planning logic
-        return "Championship schedule generated for teams: " + teamIds;
+        if (teamIds.size() % 2 != 0) {
+            teamIds.add("BYE"); // Add a bye week if there are an odd number of teams
+        }
+
+        int numTeams = teamIds.size();
+        int numRounds = numTeams - 1;
+        int matchesPerRound = numTeams / 2;
+        StringBuilder schedule = new StringBuilder();
+
+        for (int round = 0; round < numRounds; round++) {
+            schedule.append("Round ").append(round + 1).append(":\n");
+            for (int match = 0; match < matchesPerRound; match++) {
+                String home = teamIds.get(match);
+                String away = teamIds.get(numTeams - 1 - match);
+                if (!home.equals("BYE") && !away.equals("BYE")) {
+                    schedule.append("  ").append(home).append(" vs ").append(away).append("\n");
+                }
+            }
+            // Rotate teams
+            String lastTeam = teamIds.remove(numTeams - 1);
+            teamIds.add(1, lastTeam);
+        }
+
+        return schedule.toString();
     }
 }

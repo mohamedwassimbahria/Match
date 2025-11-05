@@ -31,6 +31,9 @@ public class PlanificationServiceTest {
     @Mock
     private NotificationService notificationService;
 
+    @Mock
+    private com.example.micromatch.repository.MatchRepository matchRepository;
+
     @Test
     public void testCreatePlanification() {
         when(planificationRepository.save(any(Planification.class))).thenReturn(new Planification());
@@ -133,63 +136,19 @@ public class PlanificationServiceTest {
     }
 
     @Test
-    void setEntryProtocol() {
+    void updatePlanificationDetails() {
         Planification planification = new Planification();
         planification.setId("1");
         when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
         when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
 
-        Planification updated = planificationService.setEntryProtocol("1", "Protocol XYZ");
+        com.example.micromatch.dto.UpdatePlanificationDetailsRequest request = new com.example.micromatch.dto.UpdatePlanificationDetailsRequest();
+        request.setEntryProtocol("New Protocol");
+        request.setSecurityChecks("New Checks");
+        Planification updated = planificationService.updatePlanificationDetails("1", request);
 
-        assertEquals("Protocol XYZ", updated.getEntryProtocol());
-    }
-
-    @Test
-    void setSecurityChecks() {
-        Planification planification = new Planification();
-        planification.setId("1");
-        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
-        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
-
-        Planification updated = planificationService.setSecurityChecks("1", "Standard checks");
-
-        assertEquals("Standard checks", updated.getSecurityChecks());
-    }
-
-    @Test
-    void setAntiDopingControl() {
-        Planification planification = new Planification();
-        planification.setId("1");
-        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
-        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
-
-        Planification updated = planificationService.setAntiDopingControl("1", "Random testing");
-
-        assertEquals("Random testing", updated.getAntiDopingControl());
-    }
-
-    @Test
-    void setMixedZoneInterviews() {
-        Planification planification = new Planification();
-        planification.setId("1");
-        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
-        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
-
-        Planification updated = planificationService.setMixedZoneInterviews("1", "Post-match interviews");
-
-        assertEquals("Post-match interviews", updated.getMixedZoneInterviews());
-    }
-
-    @Test
-    void setPostMatchPressConference() {
-        Planification planification = new Planification();
-        planification.setId("1");
-        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
-        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
-
-        Planification updated = planificationService.setPostMatchPressConference("1", "At 9 PM");
-
-        assertEquals("At 9 PM", updated.getPostMatchPressConference());
+        assertEquals("New Protocol", updated.getEntryProtocol());
+        assertEquals("New Checks", updated.getSecurityChecks());
     }
 
     @Test
@@ -318,5 +277,61 @@ public class PlanificationServiceTest {
         Planification updated = planificationService.markAsConfirmed("1");
 
         assertEquals("CONFIRMED", updated.getStatut());
+    }
+
+    @Test
+    void proposeBestAvailableDate() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        planification.setDatePropose(LocalDateTime.now());
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+
+        LocalDateTime bestDate = planificationService.proposeBestAvailableDate("1");
+        assertEquals(planification.getDatePropose(), bestDate);
+    }
+
+    @Test
+    void checkCalendarConflicts() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        planification.setDatePropose(LocalDateTime.now());
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+        when(matchRepository.findByDate(any())).thenReturn(new ArrayList<>());
+
+        Planification updated = planificationService.checkCalendarConflicts("1");
+        assertEquals("No conflicts found", updated.getCalendarConflict());
+    }
+
+    @Test
+    void checkTvConstraints() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        planification.setDatePropose(LocalDateTime.now().with(java.time.DayOfWeek.SATURDAY));
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.checkTvConstraints("1");
+        assertEquals("No TV constraints", updated.getTvConstraint());
+    }
+
+    @Test
+    void checkTeamRestPeriod() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        planification.setTeam1MinRestDays(3);
+        planification.setTeam2MinRestDays(3);
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+
+        String result = planificationService.checkTeamRestPeriod("1");
+        assertEquals("Minimum rest period check passed", result);
+    }
+
+    @Test
+    void planChampionship() {
+        List<String> teams = new ArrayList<>(List.of("Team A", "Team B", "Team C", "Team D"));
+        String schedule = planificationService.planChampionship(teams);
+        assert(schedule.contains("Round 1"));
+        assert(schedule.contains("Team A vs Team D"));
     }
 }
