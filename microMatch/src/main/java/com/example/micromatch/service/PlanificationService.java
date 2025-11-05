@@ -163,4 +163,34 @@ public class PlanificationService {
         planification.getHistoriqueModifications().add("Catch-up date found: " + catchUpDate + " due to: " + reasonForChange);
         return planificationRepository.save(planification);
     }
+
+    public Planification setEntryProtocol(String planificationId, String entryProtocol) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
+        planification.setEntryProtocol(entryProtocol);
+        return planificationRepository.save(planification);
+    }
+
+    public Planification setSecurityChecks(String planificationId, String securityChecks) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
+        planification.setSecurityChecks(securityChecks);
+        return planificationRepository.save(planification);
+    }
+
+    public Planification setAntiDopingControl(String planificationId, String antiDopingControl) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
+        planification.setAntiDopingControl(antiDopingControl);
+        return planificationRepository.save(planification);
+    }
+
+    public Planification setMixedZoneInterviews(String planificationId, String mixedZoneInterviews) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
+        planification.setMixedZoneInterviews(mixedZoneInterviews);
+        return planificationRepository.save(planification);
+    }
+
+    public Planification setPostMatchPressConference(String planificationId, String postMatchPressConference) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
+        planification.setPostMatchPressConference(postMatchPressConference);
+        return planificationRepository.save(planification);
+    }
 }

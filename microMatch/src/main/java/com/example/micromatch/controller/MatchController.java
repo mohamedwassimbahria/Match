@@ -190,4 +190,19 @@ public class MatchController {
     public List<Match.ArbitralDecision> getArbitralDecisions(@PathVariable String id) {
         return matchService.getArbitralDecisions(id);
     }
+
+    @GetMapping("/{id}/duration")
+    public long calculateTotalMatchDuration(@PathVariable String id) {
+        return matchService.calculateTotalMatchDuration(id);
+    }
+
+    @GetMapping("/{id}/timeline")
+    public List<Match.Event> getMatchTimeline(@PathVariable String id) {
+        return matchService.getMatchTimeline(id);
+    }
+
+    @PutMapping("/{id}/current-minute")
+    public Match updateCurrentMinute(@PathVariable String id, @RequestBody UpdateCurrentMinuteRequest request) {
+        return matchService.updateCurrentMinute(id, request.getMinute());
+    }
 }

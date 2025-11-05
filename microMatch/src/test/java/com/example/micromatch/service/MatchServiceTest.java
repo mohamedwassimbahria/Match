@@ -233,4 +233,73 @@ class MatchServiceTest {
 
         assertEquals(1, updated.getDecisions().size());
     }
+
+    @Test
+    void calculateTotalMatchDuration() {
+        Match match = new Match();
+        match.setId("1");
+        match.setStartTime(LocalDateTime.now());
+        match.setEndTime(LocalDateTime.now().plusMinutes(90));
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+
+        long duration = matchService.calculateTotalMatchDuration("1");
+
+        assertEquals(90, duration);
+    }
+
+    @Test
+    void getMatchTimeline() {
+        Match match = new Match();
+        match.setId("1");
+        match.setEvents(new ArrayList<>());
+        Match.Event goal1 = new Match.Event(null, 60, EventType.GOAL.name(), "1", null, "Goal");
+        Match.Event goal2 = new Match.Event(null, 30, EventType.GOAL.name(), "2", null, "Goal");
+        match.getEvents().add(goal1);
+        match.getEvents().add(goal2);
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+
+        List<Match.Event> timeline = matchService.getMatchTimeline("1");
+
+        assertEquals(2, timeline.size());
+        assertEquals(30, timeline.get(0).getMinute());
+        assertEquals(60, timeline.get(1).getMinute());
+    }
+
+    @Test
+    void updateCurrentMinute() {
+        Match match = new Match();
+        match.setId("1");
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        Match updated = matchService.updateCurrentMinute("1", 75);
+
+        assertEquals(75, updated.getCurrentMinute());
+    }
+
+    @Test
+    void addRedCardEvent() {
+        Match match = new Match();
+        match.setId("1");
+        match.setEvents(new ArrayList<>());
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        Match.Event redCard = new Match.Event(null, 80, EventType.RED_CARD.name(), "1", null, "Red Card");
+        matchService.addEvent("1", redCard);
+
+        verify(notificationService).sendNotification("Red card in match 1");
+    }
+
+    @Test
+    void changePhaseToHalfTime() {
+        Match match = new Match();
+        match.setId("1");
+        when(matchRepository.findById("1")).thenReturn(Optional.of(match));
+        when(matchRepository.save(any(Match.class))).thenReturn(match);
+
+        matchService.changePhase("1", MatchPhase.HALF_TIME);
+
+        verify(notificationService).sendNotification("Half-time in match 1");
+    }
 }

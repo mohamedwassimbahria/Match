@@ -52,6 +52,7 @@ public class MatchService {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
         match.setStatus(MatchStatus.LIVE.name());
         match.setMatchPhase(MatchPhase.FIRST_HALF);
+        match.setStartTime(LocalDateTime.now());
         notificationService.sendNotification("Match " + matchId + " has started");
         return matchRepository.save(match);
     }
@@ -60,6 +61,7 @@ public class MatchService {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
         match.setStatus(MatchStatus.FINISHED.name());
         match.setMatchPhase(MatchPhase.FULL_TIME);
+        match.setEndTime(LocalDateTime.now());
         notificationService.sendNotification("Match " + matchId + " has finished");
         return matchRepository.save(match);
     }
@@ -68,6 +70,9 @@ public class MatchService {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
         match.setMatchPhase(newPhase);
         notificationService.sendNotification("Match " + matchId + " has changed phase to " + newPhase.name());
+        if (newPhase == MatchPhase.HALF_TIME) {
+            notificationService.sendNotification("Half-time in match " + matchId);
+        }
         return matchRepository.save(match);
     }
 
@@ -109,6 +114,8 @@ public class MatchService {
             String teamId = event.getTeamId();
             match.getScore().put(teamId, match.getScore().get(teamId) + 1);
             notificationService.sendNotification("Goal scored in match " + matchId + " by team " + teamId);
+        } else if (EventType.RED_CARD.name().equals(event.getType())) {
+            notificationService.sendNotification("Red card in match " + matchId);
         }
 
         return matchRepository.save(match);
@@ -364,5 +371,25 @@ public class MatchService {
     public List<Match.ArbitralDecision> getArbitralDecisions(String matchId) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
         return match.getDecisions();
+    }
+
+    public long calculateTotalMatchDuration(String matchId) {
+        Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
+        if (match.getStartTime() == null || match.getEndTime() == null) {
+            return 0;
+        }
+        return java.time.Duration.between(match.getStartTime(), match.getEndTime()).toMinutes();
+    }
+
+    public List<Match.Event> getMatchTimeline(String matchId) {
+        Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
+        match.getEvents().sort((e1, e2) -> Integer.compare(e1.getMinute(), e2.getMinute()));
+        return match.getEvents();
+    }
+
+    public Match updateCurrentMinute(String matchId, int minute) {
+        Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
+        match.setCurrentMinute(minute);
+        return matchRepository.save(match);
     }
 }

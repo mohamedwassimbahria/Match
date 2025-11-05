@@ -94,4 +94,29 @@ public class PlanificationController {
     public Planification findCatchUpDate(@PathVariable String id, @RequestBody FindCatchUpDateRequest request) {
         return planificationService.findCatchUpDate(id, request.getCatchUpDate(), request.getReasonForChange());
     }
+
+    @PutMapping("/{id}/entry-protocol")
+    public Planification setEntryProtocol(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
+        return planificationService.setEntryProtocol(id, request.getEntryProtocol());
+    }
+
+    @PutMapping("/{id}/security-checks")
+    public Planification setSecurityChecks(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
+        return planificationService.setSecurityChecks(id, request.getSecurityChecks());
+    }
+
+    @PutMapping("/{id}/anti-doping-control")
+    public Planification setAntiDopingControl(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
+        return planificationService.setAntiDopingControl(id, request.getAntiDopingControl());
+    }
+
+    @PutMapping("/{id}/mixed-zone-interviews")
+    public Planification setMixedZoneInterviews(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
+        return planificationService.setMixedZoneInterviews(id, request.getMixedZoneInterviews());
+    }
+
+    @PutMapping("/{id}/post-match-press-conference")
+    public Planification setPostMatchPressConference(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
+        return planificationService.setPostMatchPressConference(id, request.getPostMatchPressConference());
+    }
 }
