@@ -1,5 +1,6 @@
 package com.example.micromatch.service;
 
+import com.example.micromatch.dto.MatchStatistics;
 import com.example.micromatch.entity.Match;
 import com.example.micromatch.exception.ResourceNotFoundException;
 import com.example.micromatch.repository.MatchRepository;
@@ -14,26 +15,33 @@ import java.util.Map;
 public class MatchPredictionService {
 
     private final MatchRepository matchRepository;
+    private final MatchAnalyticsService matchAnalyticsService;
 
     public Map<String, Double> predictOutcome(String matchId) {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
 
-        Map<String, Integer> score = match.getScore();
-        int score1 = score.get(match.getTeam1Id());
-        int score2 = score.get(match.getTeam2Id());
+        MatchStatistics stats = matchAnalyticsService.getMatchStatistics(matchId);
+
+        double team1Strength = calculateTeamStrength(stats, match.getTeam1Id());
+        double team2Strength = calculateTeamStrength(stats, match.getTeam2Id());
+
+        double totalStrength = team1Strength + team2Strength;
 
         Map<String, Double> prediction = new HashMap<>();
-        if (score1 > score2) {
-            prediction.put(match.getTeam1Id(), 0.8);
-            prediction.put(match.getTeam2Id(), 0.2);
-        } else if (score2 > score1) {
-            prediction.put(match.getTeam1Id(), 0.2);
-            prediction.put(match.getTeam2Id(), 0.8);
+        if (totalStrength > 0) {
+            prediction.put(match.getTeam1Id(), team1Strength / totalStrength);
+            prediction.put(match.getTeam2Id(), team2Strength / totalStrength);
         } else {
             prediction.put(match.getTeam1Id(), 0.5);
             prediction.put(match.getTeam2Id(), 0.5);
         }
         return prediction;
+    }
+
+    private double calculateTeamStrength(MatchStatistics stats, String teamId) {
+        double passAccuracy = stats.getPassAccuracy().getOrDefault(teamId, 0.0);
+        double shotsOnGoal = stats.getShotsOnGoal().getOrDefault(teamId, 0);
+        return (passAccuracy * 0.6) + (shotsOnGoal * 0.4);
     }
 }

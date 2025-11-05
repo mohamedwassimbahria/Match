@@ -1,15 +1,18 @@
 package com.example.micromatch.service;
 
-import com.example.micromatch.entity.Match;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class ImprovedChatbotService {
 
     private final MatchService matchService;
+    private static final Pattern MATCH_ID_PATTERN = Pattern.compile("\\b[a-fA-F0-9]{24}\\b");
 
     public String getResponse(String query) {
         String lowerCaseQuery = query.toLowerCase();
@@ -19,7 +22,7 @@ public class ImprovedChatbotService {
             if (matchId != null) {
                 return matchService.getFinalScore(matchId).toString();
             } else {
-                return "Please provide a match ID to get the score.";
+                return "Please provide a valid match ID to get the score.";
             }
         } else if (lowerCaseQuery.contains("schedule") || lowerCaseQuery.contains("next match")) {
             return matchService.getUpcomingMatches(Pageable.unpaged()).getContent().get(0).toString();
@@ -29,12 +32,9 @@ public class ImprovedChatbotService {
     }
 
     private String extractMatchId(String query) {
-        // Simple keyword-based extraction. A real implementation would use NLP.
-        String[] words = query.split(" ");
-        for (int i = 0; i < words.length; i++) {
-            if (words[i].equals("match") && i + 1 < words.length) {
-                return words[i + 1];
-            }
+        Matcher matcher = MATCH_ID_PATTERN.matcher(query);
+        if (matcher.find()) {
+            return matcher.group();
         }
         return null;
     }
