@@ -34,4 +34,47 @@ public class Planification {
 
     // Day-of-Match Schedule
     private Map<String, LocalDateTime> detailedSchedule; // e.g., "team1_arrival", "warmup_start"
+
+    private String entryProtocol;
+    private String securityChecks;
+    private String antiDopingControl;
+    private String mixedZoneInterviews;
+    private String postMatchPressConference;
+    private Integer estimatedAttendance;
+    private String riskLevel;
+    private String securityNeeds;
+    private Double potentialRevenue;
+    private String globalCalendarImpact;
+    private String contingencyPlan;
+    private String lastMinuteReport;
+    private LocalDateTime catchUpDate;
+    private String reasonForChange;
+
+    private List<TeamArrival> teamArrivals;
+    private TechnicalMeeting technicalMeeting;
+    private PressConference pressConference;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TeamArrival {
+        private String teamId;
+        private LocalDateTime arrivalTime;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TechnicalMeeting {
+        private LocalDateTime time;
+        private String location;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PressConference {
+        private LocalDateTime time;
+        private String location;
+    }
 }
