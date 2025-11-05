@@ -6,6 +6,8 @@ import com.example.micromatch.exception.ResourceNotFoundException;
 import com.example.micromatch.repository.PlanificationRepository;
 import com.example.micromatch.entity.Match;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -109,8 +111,8 @@ public class PlanificationService {
         return schedule.toString();
     }
 
-    public List<Planification> getPlanificationHistory(String matchId) {
-        return planificationRepository.findByMatchId(matchId);
+    public Page<Planification> getPlanificationHistory(String matchId, Pageable pageable) {
+        return planificationRepository.findByMatchId(matchId, pageable);
     }
 
     public String generatePlanificationReport(String planificationId) {
@@ -224,8 +226,8 @@ public class PlanificationService {
     public Planification checkCalendarConflicts(String planificationId) {
         Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
         // Simplified logic: checks for other matches on the same day.
-        List<Match> otherMatches = matchRepository.findByDate(planification.getDatePropose());
-        if (otherMatches.size() > 1) { // 1 being the current match
+        Page<Match> otherMatches = matchRepository.findByDate(planification.getDatePropose(), Pageable.unpaged());
+        if (otherMatches.getTotalElements() > 1) { // 1 being the current match
             planification.setCalendarConflict("Conflict: another match is scheduled on the same day.");
         } else {
             planification.setCalendarConflict("No conflicts found");

@@ -104,19 +104,4 @@ public class Match {
         private String description;
     }
 
-    public static final List<String> TUNISIAN_REFEREES = Arrays.asList(
-            "Sadok Selmi",
-            "Youssef Srairi",
-            "Haythem Guirat",
-            "Naim Hosni",
-            "Oussama Rezgallah"
-    );
-
-    public static final List<String> TUNISIAN_COACHES = Arrays.asList(
-            "Mondher Kebaier",
-            "Faouzi Benzarti",
-            "Nabil Maaloul",
-            "Lassaad Dridi",
-            "Sami Trabelsi"
-    );
 }
