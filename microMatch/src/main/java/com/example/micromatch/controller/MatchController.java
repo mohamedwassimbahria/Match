@@ -62,8 +62,33 @@ public class MatchController {
     }
 
     @DeleteMapping("/{id}/events/{eventId}")
-    public Match cancelGoal(@PathVariable String id, @PathVariable String eventId) {
-        return matchService.cancelGoal(id, eventId);
+    public Match deleteEvent(@PathVariable String id, @PathVariable String eventId) {
+        return matchService.deleteEvent(id, eventId);
+    }
+
+    @PutMapping("/{id}/events/{eventId}")
+    public Match updateEvent(@PathVariable String id, @PathVariable String eventId, @RequestBody UpdateEventRequest request) {
+        return matchService.updateEvent(id, eventId, request.getEvent());
+    }
+
+    @GetMapping("/{id}/events")
+    public List<Match.Event> getEvents(@PathVariable String id) {
+        return matchService.getEvents(id);
+    }
+
+    @PutMapping("/{id}/additional-time")
+    public Match addAdditionalTime(@PathVariable String id, @RequestBody AddAdditionalTimeRequest request) {
+        return matchService.addAdditionalTime(id, request.getAdditionalTime());
+    }
+
+    @GetMapping("/{id}/score/final")
+    public Map<String, Integer> getFinalScore(@PathVariable String id) {
+        return matchService.getFinalScore(id);
+    }
+
+    @GetMapping("/{id}/score/history")
+    public Map<Integer, Map<String, Integer>> getScoreHistory(@PathVariable String id) {
+        return matchService.getScoreHistory(id);
     }
 
     @PutMapping("/{id}/score/manual")
@@ -119,5 +144,50 @@ public class MatchController {
     @PostMapping("/search")
     public List<Match> searchMatches(@RequestBody SearchMatchesRequest request) {
         return matchService.searchMatches(request);
+    }
+
+    @PutMapping("/{id}/referee/main")
+    public Match assignMainReferee(@PathVariable String id, @RequestBody AssignMainRefereeRequest request) {
+        return matchService.assignMainReferee(id, request.getRefereeName());
+    }
+
+    @PutMapping("/{id}/referee/assistants")
+    public Match assignAssistantReferees(@PathVariable String id, @RequestBody AssignAssistantRefereesRequest request) {
+        return matchService.assignAssistantReferees(id, request.getAssistantReferees());
+    }
+
+    @PutMapping("/{id}/referee/fourth-official")
+    public Match assignFourthOfficial(@PathVariable String id, @RequestBody AssignFourthOfficialRequest request) {
+        return matchService.assignFourthOfficial(id, request.getFourthOfficial());
+    }
+
+    @PutMapping("/{id}/referee/var")
+    public Match assignVarReferees(@PathVariable String id, @RequestBody AssignVarRefereesRequest request) {
+        return matchService.assignVarReferees(id, request.getVarReferees());
+    }
+
+    @GetMapping("/today")
+    public List<Match> getTodaysMatches() {
+        return matchService.getTodaysMatches();
+    }
+
+    @GetMapping("/upcoming")
+    public List<Match> getUpcomingMatches() {
+        return matchService.getUpcomingMatches();
+    }
+
+    @GetMapping("/finished")
+    public List<Match> getFinishedMatches() {
+        return matchService.getFinishedMatches();
+    }
+
+    @PostMapping("/{id}/decisions")
+    public Match addArbitralDecision(@PathVariable String id, @RequestBody AddArbitralDecisionRequest request) {
+        return matchService.addArbitralDecision(id, request.getDecision());
+    }
+
+    @GetMapping("/{id}/decisions")
+    public List<Match.ArbitralDecision> getArbitralDecisions(@PathVariable String id) {
+        return matchService.getArbitralDecisions(id);
     }
 }
