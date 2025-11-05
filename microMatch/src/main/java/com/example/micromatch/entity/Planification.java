@@ -50,9 +50,17 @@ public class Planification {
     private LocalDateTime catchUpDate;
     private String reasonForChange;
 
+    private List<LocalDateTime> alternativeDates;
+    private boolean validated;
+    private String calendarConflict;
+    private String tvConstraint;
+
+    private boolean planningLocked;
+
     private List<TeamArrival> teamArrivals;
     private TechnicalMeeting technicalMeeting;
     private PressConference pressConference;
+    private List<WarmUp> warmUps;
 
     @Data
     @NoArgsConstructor
@@ -76,5 +84,14 @@ public class Planification {
     public static class PressConference {
         private LocalDateTime time;
         private String location;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class WarmUp {
+        private String teamId;
+        private LocalDateTime startTime;
+        private int durationInMinutes;
     }
 }

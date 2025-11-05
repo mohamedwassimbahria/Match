@@ -193,4 +193,131 @@ public class PlanificationService {
         planification.setPostMatchPressConference(postMatchPressConference);
         return planificationRepository.save(planification);
     }
+
+    public Planification generateDateProposals(String planificationId) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        List<LocalDateTime> proposals = new ArrayList<>();
+        proposals.add(planification.getDatePropose().plusDays(1));
+        proposals.add(planification.getDatePropose().plusDays(2));
+        planification.setAlternativeDates(proposals);
+        notificationService.sendNotification("New date proposals generated for " + planificationId);
+        return planificationRepository.save(planification);
+    }
+
+    public Planification validatePlanning(String planificationId) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        planification.setValidated(true);
+        notificationService.sendNotification("Planning " + planificationId + " has been validated");
+        return planificationRepository.save(planification);
+    }
+
+    public Planification updateMatchDateTime(String planificationId, LocalDateTime newDateTime) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        planification.setDatePropose(newDateTime);
+        planification.getHistoriqueModifications().add("Match date/time updated to: " + newDateTime);
+        notificationService.sendNotification("Match date/time for " + planificationId + " updated");
+        return planificationRepository.save(planification);
+    }
+
+    public String checkTeamRestPeriod(String planificationId) {
+        // Placeholder for real calculation
+        return "Minimum rest period check passed";
+    }
+
+    public Planification checkCalendarConflicts(String planificationId) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        // Placeholder for real conflict check
+        planification.setCalendarConflict("No conflicts found");
+        return planificationRepository.save(planification);
+    }
+
+    public Planification checkTvConstraints(String planificationId) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        // Placeholder for real TV constraint check
+        planification.setTvConstraint("No TV constraints");
+        return planificationRepository.save(planification);
+    }
+
+    public LocalDateTime proposeBestAvailableDate(String planificationId) {
+        // Placeholder for optimization algorithm
+        return LocalDateTime.now().plusWeeks(1);
+    }
+
+    public List<LocalDateTime> suggestAlternatives(String planificationId) {
+        // Placeholder for alternative suggestion logic
+        List<LocalDateTime> alternatives = new ArrayList<>();
+        alternatives.add(LocalDateTime.now().plusDays(10));
+        alternatives.add(LocalDateTime.now().plusDays(12));
+        return alternatives;
+    }
+
+    public Planification submitForValidation(String planificationId) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        planification.setStatut(PlanificationStatus.SUBMITTED_FOR_VALIDATION.name());
+        notificationService.sendNotification("Planification " + planificationId + " submitted for validation");
+        return planificationRepository.save(planification);
+    }
+
+    public Planification approvePlanification(String planificationId) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        planification.setStatut(PlanificationStatus.APPROVED.name());
+        notificationService.sendNotification("Planification " + planificationId + " has been approved");
+        return planificationRepository.save(planification);
+    }
+
+    public Planification rejectPlanification(String planificationId, String reason) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        planification.setStatut(PlanificationStatus.REJECTED.name());
+        planification.getHistoriqueModifications().add("Rejected due to: " + reason);
+        notificationService.sendNotification("Planification " + planificationId + " has been rejected");
+        return planificationRepository.save(planification);
+    }
+
+    public Planification requestModification(String planificationId, String reason) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        planification.setStatut(PlanificationStatus.MODIFICATION_REQUESTED.name());
+        planification.getHistoriqueModifications().add("Modification requested due to: " + reason);
+        notificationService.sendNotification("Modification requested for planification " + planificationId);
+        return planificationRepository.save(planification);
+    }
+
+    public void notifyStakeholders(String planificationId, String message) {
+        // In a real scenario, this would involve more complex logic to identify and notify all stakeholders
+        notificationService.sendNotification("Attention Stakeholders for Planification " + planificationId + ": " + message);
+    }
+
+    public Planification planWarmUps(String planificationId, List<Planification.WarmUp> warmUps) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        planification.setWarmUps(warmUps);
+        notificationService.sendNotification("Warm-ups planned for " + planificationId);
+        return planificationRepository.save(planification);
+    }
+
+    public String analyzeGlobalCalendarImpact(String planificationId) {
+        // Placeholder for impact analysis
+        return "Global calendar impact analysis: Minimal";
+    }
+
+    public Planification lockPlanning(String planificationId) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        if (planification.getDatePropose().isBefore(LocalDateTime.now().plusDays(2))) {
+            planification.setPlanningLocked(true);
+            notificationService.sendNotification("Planning for " + planificationId + " is now locked");
+        } else {
+            notificationService.sendNotification("Planning for " + planificationId + " cannot be locked yet");
+        }
+        return planificationRepository.save(planification);
+    }
+
+    public Planification markAsConfirmed(String planificationId) {
+        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
+        planification.setStatut(PlanificationStatus.CONFIRMED.name());
+        notificationService.sendNotification("Planification " + planificationId + " has been marked as confirmed");
+        return planificationRepository.save(planification);
+    }
+
+    public String planChampionship(List<String> teamIds) {
+        // Placeholder for championship planning logic
+        return "Championship schedule generated for teams: " + teamIds;
+    }
 }
