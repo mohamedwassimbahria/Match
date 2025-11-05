@@ -131,4 +131,64 @@ public class PlanificationServiceTest {
         assertEquals(catchUpDate, updated.getCatchUpDate());
         assertEquals("Heavy rain", updated.getReasonForChange());
     }
+
+    @Test
+    void setEntryProtocol() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.setEntryProtocol("1", "Protocol XYZ");
+
+        assertEquals("Protocol XYZ", updated.getEntryProtocol());
+    }
+
+    @Test
+    void setSecurityChecks() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.setSecurityChecks("1", "Standard checks");
+
+        assertEquals("Standard checks", updated.getSecurityChecks());
+    }
+
+    @Test
+    void setAntiDopingControl() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.setAntiDopingControl("1", "Random testing");
+
+        assertEquals("Random testing", updated.getAntiDopingControl());
+    }
+
+    @Test
+    void setMixedZoneInterviews() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.setMixedZoneInterviews("1", "Post-match interviews");
+
+        assertEquals("Post-match interviews", updated.getMixedZoneInterviews());
+    }
+
+    @Test
+    void setPostMatchPressConference() {
+        Planification planification = new Planification();
+        planification.setId("1");
+        when(planificationRepository.findById("1")).thenReturn(Optional.of(planification));
+        when(planificationRepository.save(any(Planification.class))).thenReturn(planification);
+
+        Planification updated = planificationService.setPostMatchPressConference("1", "At 9 PM");
+
+        assertEquals("At 9 PM", updated.getPostMatchPressConference());
+    }
 }

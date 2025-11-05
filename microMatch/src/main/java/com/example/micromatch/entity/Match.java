@@ -59,6 +59,10 @@ public class Match {
 
     private List<ArbitralDecision> decisions;
 
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private Integer currentMinute;
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
