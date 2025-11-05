@@ -3,7 +3,10 @@ package com.example.micromatch.controller;
 import com.example.micromatch.dto.*;
 import com.example.micromatch.entity.Planification;
 import com.example.micromatch.service.PlanificationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +19,7 @@ public class PlanificationController {
     private final PlanificationService planificationService;
 
     @PostMapping
-    public Planification createPlanification(@RequestBody CreatePlanificationRequest request) {
+    public Planification createPlanification(@Valid @RequestBody CreatePlanificationRequest request) {
         return planificationService.createPlanification(request.getMatchId(), request.getDatePropose());
     }
 
@@ -31,27 +34,27 @@ public class PlanificationController {
     }
 
     @PostMapping("/{id}/constraints/check")
-    public Planification checkAllConstraints(@PathVariable String id, @RequestBody CheckConstraintsRequest request) {
+    public Planification checkAllConstraints(@PathVariable String id, @Valid @RequestBody CheckConstraintsRequest request) {
         return planificationService.checkAllConstraints(id, request.getDate());
     }
 
     @PutMapping("/{id}/schedule")
-    public Planification updateDetailedSchedule(@PathVariable String id, @RequestBody UpdateDetailedScheduleRequest request) {
+    public Planification updateDetailedSchedule(@PathVariable String id, @Valid @RequestBody UpdateDetailedScheduleRequest request) {
         return planificationService.updateDetailedSchedule(id, request.getSchedule());
     }
 
     @PutMapping("/{id}/team-arrivals")
-    public Planification defineTeamArrivals(@PathVariable String id, @RequestBody DefineTeamArrivalsRequest request) {
+    public Planification defineTeamArrivals(@PathVariable String id, @Valid @RequestBody DefineTeamArrivalsRequest request) {
         return planificationService.defineTeamArrivals(id, request.getTeamArrivals());
     }
 
     @PutMapping("/{id}/technical-meeting")
-    public Planification planTechnicalMeeting(@PathVariable String id, @RequestBody PlanTechnicalMeetingRequest request) {
+    public Planification planTechnicalMeeting(@PathVariable String id, @Valid @RequestBody PlanTechnicalMeetingRequest request) {
         return planificationService.planTechnicalMeeting(id, request.getTechnicalMeeting());
     }
 
     @PutMapping("/{id}/press-conference")
-    public Planification planPressConference(@PathVariable String id, @RequestBody PlanPressConferenceRequest request) {
+    public Planification planPressConference(@PathVariable String id, @Valid @RequestBody PlanPressConferenceRequest request) {
         return planificationService.planPressConference(id, request.getPressConference());
     }
 
@@ -61,8 +64,8 @@ public class PlanificationController {
     }
 
     @GetMapping("/history/{matchId}")
-    public List<Planification> getPlanificationHistory(@PathVariable String matchId) {
-        return planificationService.getPlanificationHistory(matchId);
+    public Page<Planification> getPlanificationHistory(@PathVariable String matchId, Pageable pageable) {
+        return planificationService.getPlanificationHistory(matchId, pageable);
     }
 
     @GetMapping("/{id}/report")
@@ -76,27 +79,27 @@ public class PlanificationController {
     }
 
     @PutMapping("/{id}/risk-security")
-    public Planification assessRiskAndSecurity(@PathVariable String id, @RequestBody AssessRiskAndSecurityRequest request) {
+    public Planification assessRiskAndSecurity(@PathVariable String id, @Valid @RequestBody AssessRiskAndSecurityRequest request) {
         return planificationService.assessRiskAndSecurity(id, request.getRiskLevel(), request.getSecurityNeeds(), request.getEstimatedAttendance());
     }
 
     @PutMapping("/{id}/revenue")
-    public Planification estimatePotentialRevenue(@PathVariable String id, @RequestBody EstimatePotentialRevenueRequest request) {
+    public Planification estimatePotentialRevenue(@PathVariable String id, @Valid @RequestBody EstimatePotentialRevenueRequest request) {
         return planificationService.estimatePotentialRevenue(id, request.getPotentialRevenue());
     }
 
     @PutMapping("/{id}/contingency")
-    public Planification manageContingency(@PathVariable String id, @RequestBody ManageContingencyRequest request) {
+    public Planification manageContingency(@PathVariable String id, @Valid @RequestBody ManageContingencyRequest request) {
         return planificationService.manageContingency(id, request.getContingencyPlan(), request.getLastMinuteReport());
     }
 
     @PutMapping("/{id}/catch-up-date")
-    public Planification findCatchUpDate(@PathVariable String id, @RequestBody FindCatchUpDateRequest request) {
+    public Planification findCatchUpDate(@PathVariable String id, @Valid @RequestBody FindCatchUpDateRequest request) {
         return planificationService.findCatchUpDate(id, request.getCatchUpDate(), request.getReasonForChange());
     }
 
     @PutMapping("/{id}/details")
-    public Planification updatePlanificationDetails(@PathVariable String id, @RequestBody UpdatePlanificationDetailsRequest request) {
+    public Planification updatePlanificationDetails(@PathVariable String id, @Valid @RequestBody UpdatePlanificationDetailsRequest request) {
         return planificationService.updatePlanificationDetails(id, request);
     }
 
@@ -111,7 +114,7 @@ public class PlanificationController {
     }
 
     @PutMapping("/{id}/datetime")
-    public Planification updateMatchDateTime(@PathVariable String id, @RequestBody UpdateMatchDateTimeRequest request) {
+    public Planification updateMatchDateTime(@PathVariable String id, @Valid @RequestBody UpdateMatchDateTimeRequest request) {
         return planificationService.updateMatchDateTime(id, request.getNewDateTime());
     }
 
@@ -151,22 +154,22 @@ public class PlanificationController {
     }
 
     @PutMapping("/{id}/reject")
-    public Planification rejectPlanification(@PathVariable String id, @RequestBody ReasonRequest request) {
+    public Planification rejectPlanification(@PathVariable String id, @Valid @RequestBody ReasonRequest request) {
         return planificationService.rejectPlanification(id, request.getReason());
     }
 
     @PutMapping("/{id}/request-modification")
-    public Planification requestModification(@PathVariable String id, @RequestBody ReasonRequest request) {
+    public Planification requestModification(@PathVariable String id, @Valid @RequestBody ReasonRequest request) {
         return planificationService.requestModification(id, request.getReason());
     }
 
     @PostMapping("/{id}/notify-stakeholders")
-    public void notifyStakeholders(@PathVariable String id, @RequestBody String message) {
+    public void notifyStakeholders(@PathVariable String id, @Valid @RequestBody String message) {
         planificationService.notifyStakeholders(id, message);
     }
 
     @PutMapping("/{id}/warm-ups")
-    public Planification planWarmUps(@PathVariable String id, @RequestBody PlanWarmUpsRequest request) {
+    public Planification planWarmUps(@PathVariable String id, @Valid @RequestBody PlanWarmUpsRequest request) {
         return planificationService.planWarmUps(id, request.getWarmUps());
     }
 
@@ -181,7 +184,7 @@ public class PlanificationController {
     }
 
     @PostMapping("/championship")
-    public String planChampionship(@RequestBody PlanChampionshipRequest request) {
+    public String planChampionship(@Valid @RequestBody PlanChampionshipRequest request) {
         return planificationService.planChampionship(request.getTeamIds());
     }
 

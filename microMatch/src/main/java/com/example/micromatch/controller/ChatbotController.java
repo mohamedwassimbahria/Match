@@ -3,6 +3,7 @@ package com.example.micromatch.controller;
 import com.example.micromatch.dto.ChatbotRequest;
 import com.example.micromatch.dto.ChatbotResponse;
 import com.example.micromatch.service.ChatbotService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +18,7 @@ public class ChatbotController {
     private final ChatbotService chatbotService;
 
     @PostMapping("/query")
-    public ChatbotResponse getChatbotResponse(@RequestBody ChatbotRequest request) {
+    public ChatbotResponse getChatbotResponse(@Valid @RequestBody ChatbotRequest request) {
         String response = chatbotService.getResponse(request.getQuery());
         return new ChatbotResponse(response);
     }

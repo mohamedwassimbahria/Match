@@ -3,7 +3,10 @@ package com.example.micromatch.controller;
 import com.example.micromatch.dto.*;
 import com.example.micromatch.entity.Match;
 import com.example.micromatch.service.MatchService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +20,7 @@ public class MatchController {
     private final MatchService matchService;
 
     @PostMapping
-    public Match createMatch(@RequestBody CreateMatchRequest request) {
+    public Match createMatch(@Valid @RequestBody CreateMatchRequest request) {
         return matchService.createMatch(request.getTeam1Id(), request.getTeam2Id(), request.getDate());
     }
 
@@ -32,7 +35,7 @@ public class MatchController {
     }
 
     @PutMapping("/{id}/phase")
-    public Match changePhase(@PathVariable String id, @RequestBody ChangePhaseRequest request) {
+    public Match changePhase(@PathVariable String id, @Valid @RequestBody ChangePhaseRequest request) {
         return matchService.changePhase(id, request.getNewPhase());
     }
 
@@ -47,7 +50,7 @@ public class MatchController {
     }
 
     @PutMapping("/{id}/postpone")
-    public Match postponeMatch(@PathVariable String id, @RequestBody PostponeMatchRequest request) {
+    public Match postponeMatch(@PathVariable String id, @Valid @RequestBody PostponeMatchRequest request) {
         return matchService.postponeMatch(id, request.getNewDate());
     }
 
@@ -57,7 +60,7 @@ public class MatchController {
     }
 
     @PostMapping("/{id}/events")
-    public Match addEvent(@PathVariable String id, @RequestBody Match.Event event) {
+    public Match addEvent(@PathVariable String id, @Valid @RequestBody Match.Event event) {
         return matchService.addEvent(id, event);
     }
 
@@ -67,17 +70,17 @@ public class MatchController {
     }
 
     @PutMapping("/{id}/events/{eventId}")
-    public Match updateEvent(@PathVariable String id, @PathVariable String eventId, @RequestBody UpdateEventRequest request) {
+    public Match updateEvent(@PathVariable String id, @PathVariable String eventId, @Valid @RequestBody UpdateEventRequest request) {
         return matchService.updateEvent(id, eventId, request.getEvent());
     }
 
     @GetMapping("/{id}/events")
-    public List<Match.Event> getEvents(@PathVariable String id) {
-        return matchService.getEvents(id);
+    public Page<Match.Event> getEvents(@PathVariable String id, Pageable pageable) {
+        return matchService.getEvents(id, pageable);
     }
 
     @PutMapping("/{id}/additional-time")
-    public Match addAdditionalTime(@PathVariable String id, @RequestBody AddAdditionalTimeRequest request) {
+    public Match addAdditionalTime(@PathVariable String id, @Valid @RequestBody AddAdditionalTimeRequest request) {
         return matchService.addAdditionalTime(id, request.getAdditionalTime());
     }
 
@@ -91,38 +94,34 @@ public class MatchController {
         return matchService.getScoreHistory(id);
     }
 
-    @PutMapping("/{id}/score/manual")
-    public Match updateScoreManually(@PathVariable String id, @RequestBody UpdateScoreManuallyRequest request) {
-        return matchService.updateScoreManually(id, request.getScoreTeam1(), request.getScoreTeam2());
-    }
 
     @PutMapping("/{id}/lineup")
-    public Match defineLineup(@PathVariable String id, @RequestBody DefineLineupRequest request) {
+    public Match defineLineup(@PathVariable String id, @Valid @RequestBody DefineLineupRequest request) {
         return matchService.defineLineup(id, request.getTeamId(), request.getPlayerIds());
     }
 
     @PutMapping("/{id}/substitutes")
-    public Match defineSubstitutes(@PathVariable String id, @RequestBody DefineSubstitutesRequest request) {
+    public Match defineSubstitutes(@PathVariable String id, @Valid @RequestBody DefineSubstitutesRequest request) {
         return matchService.defineSubstitutes(id, request.getTeamId(), request.getPlayerIds());
     }
 
     @PutMapping("/{id}/tactical-system")
-    public Match defineTacticalSystem(@PathVariable String id, @RequestBody DefineTacticalSystemRequest request) {
+    public Match defineTacticalSystem(@PathVariable String id, @Valid @RequestBody DefineTacticalSystemRequest request) {
         return matchService.defineTacticalSystem(id, request.getTeamId(), request.getTacticalSystem());
     }
 
     @PutMapping("/{id}/captain")
-    public Match assignCaptain(@PathVariable String id, @RequestBody AssignCaptainRequest request) {
+    public Match assignCaptain(@PathVariable String id, @Valid @RequestBody AssignCaptainRequest request) {
         return matchService.assignCaptain(id, request.getTeamId(), request.getPlayerId());
     }
 
     @PostMapping("/{id}/stats/collective")
-    public Match recordCollectiveStats(@PathVariable String id, @RequestBody RecordCollectiveStatsRequest request) {
+    public Match recordCollectiveStats(@PathVariable String id, @Valid @RequestBody RecordCollectiveStatsRequest request) {
         return matchService.recordCollectiveStats(id, request.getTeamId(), request.getStats());
     }
 
     @PostMapping("/{id}/stats/individual")
-    public Match recordIndividualStats(@PathVariable String id, @RequestBody RecordIndividualStatsRequest request) {
+    public Match recordIndividualStats(@PathVariable String id, @Valid @RequestBody RecordIndividualStatsRequest request) {
         return matchService.recordIndividualStats(id, request.getPlayerStats());
     }
 
@@ -132,7 +131,7 @@ public class MatchController {
     }
 
     @PostMapping("/{id}/media")
-    public Match addMedia(@PathVariable String id, @RequestBody AddMediaRequest request) {
+    public Match addMedia(@PathVariable String id, @Valid @RequestBody AddMediaRequest request) {
         return matchService.addMedia(id, request.getMedia());
     }
 
@@ -142,53 +141,53 @@ public class MatchController {
     }
 
     @PostMapping("/search")
-    public List<Match> searchMatches(@RequestBody SearchMatchesRequest request) {
-        return matchService.searchMatches(request);
+    public Page<Match> searchMatches(@Valid @RequestBody SearchMatchesRequest request, Pageable pageable) {
+        return matchService.searchMatches(request, pageable);
     }
 
     @PutMapping("/{id}/referee/main")
-    public Match assignMainReferee(@PathVariable String id, @RequestBody AssignMainRefereeRequest request) {
+    public Match assignMainReferee(@PathVariable String id, @Valid @RequestBody AssignMainRefereeRequest request) {
         return matchService.assignMainReferee(id, request.getRefereeName());
     }
 
     @PutMapping("/{id}/referee/assistants")
-    public Match assignAssistantReferees(@PathVariable String id, @RequestBody AssignAssistantRefereesRequest request) {
+    public Match assignAssistantReferees(@PathVariable String id, @Valid @RequestBody AssignAssistantRefereesRequest request) {
         return matchService.assignAssistantReferees(id, request.getAssistantReferees());
     }
 
     @PutMapping("/{id}/referee/fourth-official")
-    public Match assignFourthOfficial(@PathVariable String id, @RequestBody AssignFourthOfficialRequest request) {
+    public Match assignFourthOfficial(@PathVariable String id, @Valid @RequestBody AssignFourthOfficialRequest request) {
         return matchService.assignFourthOfficial(id, request.getFourthOfficial());
     }
 
     @PutMapping("/{id}/referee/var")
-    public Match assignVarReferees(@PathVariable String id, @RequestBody AssignVarRefereesRequest request) {
+    public Match assignVarReferees(@PathVariable String id, @Valid @RequestBody AssignVarRefereesRequest request) {
         return matchService.assignVarReferees(id, request.getVarReferees());
     }
 
     @GetMapping("/today")
-    public List<Match> getTodaysMatches() {
-        return matchService.getTodaysMatches();
+    public Page<Match> getTodaysMatches(Pageable pageable) {
+        return matchService.getTodaysMatches(pageable);
     }
 
     @GetMapping("/upcoming")
-    public List<Match> getUpcomingMatches() {
-        return matchService.getUpcomingMatches();
+    public Page<Match> getUpcomingMatches(Pageable pageable) {
+        return matchService.getUpcomingMatches(pageable);
     }
 
     @GetMapping("/finished")
-    public List<Match> getFinishedMatches() {
-        return matchService.getFinishedMatches();
+    public Page<Match> getFinishedMatches(Pageable pageable) {
+        return matchService.getFinishedMatches(pageable);
     }
 
     @PostMapping("/{id}/decisions")
-    public Match addArbitralDecision(@PathVariable String id, @RequestBody AddArbitralDecisionRequest request) {
+    public Match addArbitralDecision(@PathVariable String id, @Valid @RequestBody AddArbitralDecisionRequest request) {
         return matchService.addArbitralDecision(id, request.getDecision());
     }
 
     @GetMapping("/{id}/decisions")
-    public List<Match.ArbitralDecision> getArbitralDecisions(@PathVariable String id) {
-        return matchService.getArbitralDecisions(id);
+    public Page<Match.ArbitralDecision> getArbitralDecisions(@PathVariable String id, Pageable pageable) {
+        return matchService.getArbitralDecisions(id, pageable);
     }
 
     @GetMapping("/{id}/duration")
@@ -197,12 +196,12 @@ public class MatchController {
     }
 
     @GetMapping("/{id}/timeline")
-    public List<Match.Event> getMatchTimeline(@PathVariable String id) {
-        return matchService.getMatchTimeline(id);
+    public Page<Match.Event> getMatchTimeline(@PathVariable String id, Pageable pageable) {
+        return matchService.getMatchTimeline(id, pageable);
     }
 
     @PutMapping("/{id}/current-minute")
-    public Match updateCurrentMinute(@PathVariable String id, @RequestBody UpdateCurrentMinuteRequest request) {
+    public Match updateCurrentMinute(@PathVariable String id, @Valid @RequestBody UpdateCurrentMinuteRequest request) {
         return matchService.updateCurrentMinute(id, request.getMinute());
     }
 }

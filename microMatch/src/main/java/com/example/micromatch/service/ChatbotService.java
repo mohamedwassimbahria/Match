@@ -3,6 +3,8 @@ package com.example.micromatch.service;
 import com.example.micromatch.entity.Match;
 import com.example.micromatch.entity.Planification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,16 +33,16 @@ public class ChatbotService {
 
     private String getNextMatchSchedule() {
         // This is a simplified implementation. A real implementation would need a way to identify the "next" match.
-        List<Match> matches = matchService.getUpcomingMatches();
+        Page<Match> matches = matchService.getUpcomingMatches(Pageable.unpaged());
         if (matches.isEmpty()) {
             return "There are no upcoming matches scheduled.";
         }
-        Match nextMatch = matches.get(0);
-        List<Planification> planifications = planificationService.getPlanificationHistory(nextMatch.getId());
+        Match nextMatch = matches.getContent().get(0);
+        Page<Planification> planifications = planificationService.getPlanificationHistory(nextMatch.getId(), Pageable.unpaged());
         if (planifications.isEmpty()) {
             return "The next match is " + nextMatch.getTeam1Id() + " vs " + nextMatch.getTeam2Id() + ", but the schedule has not been confirmed.";
         }
-        return "The next match is " + nextMatch.getTeam1Id() + " vs " + nextMatch.getTeam2Id() + " on " + planifications.get(0).getDatePropose();
+        return "The next match is " + nextMatch.getTeam1Id() + " vs " + nextMatch.getTeam2Id() + " on " + planifications.getContent().get(0).getDatePropose();
     }
 
     private String getMatchResult(String query) {

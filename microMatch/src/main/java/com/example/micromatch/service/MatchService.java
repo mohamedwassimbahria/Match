@@ -8,6 +8,9 @@ import com.example.micromatch.enums.MatchStatus;
 import com.example.micromatch.exception.ResourceNotFoundException;
 import com.example.micromatch.repository.MatchRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -28,6 +31,7 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final NotificationService notificationService;
     private final MongoTemplate mongoTemplate;
+    private final ScoreManagementService scoreManagementService;
 
     public Match createMatch(String team1Id, String team2Id, LocalDateTime date) {
         Match match = Match.builder()
@@ -111,9 +115,8 @@ public class MatchService {
         match.getEvents().add(event);
 
         if (EventType.GOAL.name().equals(event.getType())) {
-            String teamId = event.getTeamId();
-            match.getScore().put(teamId, match.getScore().get(teamId) + 1);
-            notificationService.sendNotification("Goal scored in match " + matchId + " by team " + teamId);
+            scoreManagementService.updateScore(matchId, event.getTeamId(), 1);
+            notificationService.sendNotification("Goal scored in match " + matchId + " by team " + event.getTeamId());
         } else if (EventType.RED_CARD.name().equals(event.getType())) {
             notificationService.sendNotification("Red card in match " + matchId);
         }
@@ -129,8 +132,7 @@ public class MatchService {
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + eventId));
 
         if (EventType.GOAL.name().equals(eventToRemove.getType())) {
-            String teamId = eventToRemove.getTeamId();
-            match.getScore().put(teamId, match.getScore().get(teamId) - 1);
+            scoreManagementService.updateScore(matchId, eventToRemove.getTeamId(), -1);
             notificationService.sendNotification("Goal cancelled in match " + matchId);
         }
 
@@ -148,14 +150,14 @@ public class MatchService {
         // Logic to recalculate score if a goal event is modified
         if (EventType.GOAL.name().equals(eventToUpdate.getType()) && !EventType.GOAL.name().equals(updatedEvent.getType())) {
             // Goal was removed
-            match.getScore().put(eventToUpdate.getTeamId(), match.getScore().get(eventToUpdate.getTeamId()) - 1);
+            scoreManagementService.updateScore(matchId, eventToUpdate.getTeamId(), -1);
         } else if (!EventType.GOAL.name().equals(eventToUpdate.getType()) && EventType.GOAL.name().equals(updatedEvent.getType())) {
             // Goal was added
-            match.getScore().put(updatedEvent.getTeamId(), match.getScore().get(updatedEvent.getTeamId()) + 1);
+            scoreManagementService.updateScore(matchId, updatedEvent.getTeamId(), 1);
         } else if (EventType.GOAL.name().equals(eventToUpdate.getType()) && EventType.GOAL.name().equals(updatedEvent.getType()) && !eventToUpdate.getTeamId().equals(updatedEvent.getTeamId())) {
             // Goal team changed
-            match.getScore().put(eventToUpdate.getTeamId(), match.getScore().get(eventToUpdate.getTeamId()) - 1);
-            match.getScore().put(updatedEvent.getTeamId(), match.getScore().get(updatedEvent.getTeamId()) + 1);
+            scoreManagementService.updateScore(matchId, eventToUpdate.getTeamId(), -1);
+            scoreManagementService.updateScore(matchId, updatedEvent.getTeamId(), 1);
         }
 
 
@@ -174,9 +176,12 @@ public class MatchService {
         return matchRepository.save(match);
     }
 
-    public List<Match.Event> getEvents(String matchId) {
+    public Page<Match.Event> getEvents(String matchId, Pageable pageable) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
-        return match.getEvents();
+        List<Match.Event> events = match.getEvents();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), events.size());
+        return new PageImpl<>(events.subList(start, end), pageable, events.size());
     }
 
     public Map<String, Integer> getFinalScore(String matchId) {
@@ -205,13 +210,6 @@ public class MatchService {
         return scoreHistory;
     }
 
-    public Match updateScoreManually(String matchId, int scoreTeam1, int scoreTeam2) {
-        Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
-        match.getScore().put(match.getTeam1Id(), scoreTeam1);
-        match.getScore().put(match.getTeam2Id(), scoreTeam2);
-        notificationService.sendNotification("Score updated manually for match " + matchId);
-        return matchRepository.save(match);
-    }
 
     public Match defineLineup(String matchId, String teamId, List<String> playerIds) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
@@ -292,7 +290,7 @@ public class MatchService {
         return matchRepository.save(match);
     }
 
-    public List<Match> searchMatches(SearchMatchesRequest request) {
+    public Page<Match> searchMatches(SearchMatchesRequest request, Pageable pageable) {
         Query query = new Query();
         List<Criteria> criteria = new ArrayList<>();
 
@@ -310,7 +308,11 @@ public class MatchService {
             query.addCriteria(new Criteria().andOperator(criteria.toArray(new Criteria[0])));
         }
 
-        return mongoTemplate.find(query, Match.class);
+        long count = mongoTemplate.count(query, Match.class);
+        query.with(pageable);
+        List<Match> matches = mongoTemplate.find(query, Match.class);
+
+        return new PageImpl<>(matches, pageable, count);
     }
 
     public Match assignMainReferee(String matchId, String refereeName) {
@@ -337,25 +339,34 @@ public class MatchService {
         return matchRepository.save(match);
     }
 
-    public List<Match> getTodaysMatches() {
+    public Page<Match> getTodaysMatches(Pageable pageable) {
         Query query = new Query();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = now.toLocalDate().plusDays(1).atStartOfDay();
         query.addCriteria(Criteria.where("date").gte(startOfDay).lt(endOfDay));
-        return mongoTemplate.find(query, Match.class);
+        long count = mongoTemplate.count(query, Match.class);
+        query.with(pageable);
+        List<Match> matches = mongoTemplate.find(query, Match.class);
+        return new PageImpl<>(matches, pageable, count);
     }
 
-    public List<Match> getUpcomingMatches() {
+    public Page<Match> getUpcomingMatches(Pageable pageable) {
         Query query = new Query();
         query.addCriteria(Criteria.where("date").gt(LocalDateTime.now()));
-        return mongoTemplate.find(query, Match.class);
+        long count = mongoTemplate.count(query, Match.class);
+        query.with(pageable);
+        List<Match> matches = mongoTemplate.find(query, Match.class);
+        return new PageImpl<>(matches, pageable, count);
     }
 
-    public List<Match> getFinishedMatches() {
+    public Page<Match> getFinishedMatches(Pageable pageable) {
         Query query = new Query();
         query.addCriteria(Criteria.where("status").is(MatchStatus.FINISHED.name()));
-        return mongoTemplate.find(query, Match.class);
+        long count = mongoTemplate.count(query, Match.class);
+        query.with(pageable);
+        List<Match> matches = mongoTemplate.find(query, Match.class);
+        return new PageImpl<>(matches, pageable, count);
     }
 
     public Match addArbitralDecision(String matchId, Match.ArbitralDecision decision) {
@@ -368,9 +379,12 @@ public class MatchService {
         return matchRepository.save(match);
     }
 
-    public List<Match.ArbitralDecision> getArbitralDecisions(String matchId) {
+    public Page<Match.ArbitralDecision> getArbitralDecisions(String matchId, Pageable pageable) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
-        return match.getDecisions();
+        List<Match.ArbitralDecision> decisions = match.getDecisions();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), decisions.size());
+        return new PageImpl<>(decisions.subList(start, end), pageable, decisions.size());
     }
 
     public long calculateTotalMatchDuration(String matchId) {
@@ -381,10 +395,13 @@ public class MatchService {
         return java.time.Duration.between(match.getStartTime(), match.getEndTime()).toMinutes();
     }
 
-    public List<Match.Event> getMatchTimeline(String matchId) {
+    public Page<Match.Event> getMatchTimeline(String matchId, Pageable pageable) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
         match.getEvents().sort((e1, e2) -> Integer.compare(e1.getMinute(), e2.getMinute()));
-        return match.getEvents();
+        List<Match.Event> events = match.getEvents();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), events.size());
+        return new PageImpl<>(events.subList(start, end), pageable, events.size());
     }
 
     public Match updateCurrentMinute(String matchId, int minute) {
