@@ -205,13 +205,6 @@ public class PlanificationService {
         return planificationRepository.save(planification);
     }
 
-    public Planification updateMatchDateTime(String planificationId, LocalDateTime newDateTime) {
-        Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found"));
-        planification.setDatePropose(newDateTime);
-        planification.getHistoriqueModifications().add("Match date/time updated to: " + newDateTime);
-        notificationService.sendNotification("Match date/time for " + planificationId + " updated");
-        return planificationRepository.save(planification);
-    }
 
     public String checkTeamRestPeriod(String planificationId) {
         // Simplified logic: assumes a fixed rest period of 3 days.
@@ -391,5 +384,48 @@ public class PlanificationService {
         }
 
         return schedule.toString();
+    }
+
+    public List<Match> scheduleMatches(List<String> teamIds) {
+        List<String> teams = new java.util.ArrayList<>(teamIds);
+        if (teams.size() % 2 != 0) {
+            teams.add("BYE");
+        }
+
+        java.util.Collections.shuffle(teams);
+
+        List<Match> scheduledMatches = new java.util.ArrayList<>();
+        int numTeams = teams.size();
+        int numRounds = numTeams - 1;
+
+        for (int round = 0; round < numRounds; round++) {
+            for (int i = 0; i < numTeams / 2; i++) {
+                String team1 = teams.get(i);
+                String team2 = teams.get(numTeams - 1 - i);
+
+                if (!team1.equals("BYE") && !team2.equals("BYE")) {
+                    Match match = new Match();
+                    match.setTeam1Id(team1);
+                    match.setTeam2Id(team2);
+                    match.setDate(LocalDateTime.now().plusWeeks(round + 1));
+                    scheduledMatches.add(match);
+                }
+            }
+
+            // Rotate teams for the next round
+            String lastTeam = teams.remove(numTeams - 1);
+            teams.add(1, lastTeam);
+        }
+
+        return matchRepository.saveAll(scheduledMatches);
+    }
+
+    public Planification updateMatchDateTime(String planificationId, LocalDateTime newDateTime) {
+        Planification planification = planificationRepository.findById(planificationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
+        planification.setDatePropose(newDateTime);
+        planification.getHistoriqueModifications().add("Match date/time updated to: " + newDateTime);
+        notificationService.sendNotification("Match date/time for " + planificationId + " updated");
+        return planificationRepository.save(planification);
     }
 }
