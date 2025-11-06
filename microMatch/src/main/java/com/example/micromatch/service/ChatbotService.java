@@ -50,13 +50,11 @@ public class ChatbotService {
         // For simplicity, we'll assume the user provides the match ID.
         try {
             String matchId = extractMatchId(query);
-            if (matchId == null) {
-                return "Please provide a match ID to get the score.";
+            if (matchId != null) {
+                return matchService.getFinalScore(matchId).toString();
+            } else {
+                return "Please provide a valid match ID to get the score.";
             }
-            Map<String, Integer> score = matchService.getFinalScore(matchId);
-            String team1Id = score.keySet().toArray()[0].toString();
-            String team2Id = score.keySet().toArray()[1].toString();
-            return "The score for match " + matchId + " was " + score.get(team1Id) + " - " + score.get(team2Id) + ".";
         } catch (Exception e) {
             return "I couldn't find a match with that ID.";
         }
@@ -78,14 +76,10 @@ public class ChatbotService {
 
     private String extractMatchId(String query) {
         // A simple way to extract a potential match ID.
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\bmatch\\s*(\\d+)\\b|\\b(\\d+)\\b");
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\b[a-fA-F0-9]{24}\\b");
         java.util.regex.Matcher matcher = pattern.matcher(query);
         if (matcher.find()) {
-            if (matcher.group(1) != null) {
-                return matcher.group(1);
-            } else {
-                return matcher.group(2);
-            }
+            return matcher.group();
         }
         return null;
     }
