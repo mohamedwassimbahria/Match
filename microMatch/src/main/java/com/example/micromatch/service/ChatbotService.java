@@ -33,7 +33,12 @@ public class ChatbotService {
 
     private String getNextMatchSchedule() {
         // This is a simplified implementation. A real implementation would need a way to identify the "next" match.
-        return matchService.getUpcomingMatches(Pageable.unpaged()).getContent().get(0).toString();
+        Page<Match> matches = matchService.getUpcomingMatches(Pageable.unpaged());
+        if (matches.isEmpty()) {
+            return "There are no upcoming matches scheduled.";
+        }
+        Match nextMatch = matches.getContent().get(0);
+        return "The next match is " + nextMatch.getTeam1Id() + " vs " + nextMatch.getTeam2Id() + " on " + nextMatch.getDate();
     }
 
     private String getMatchResult(String query) {
@@ -42,7 +47,10 @@ public class ChatbotService {
         try {
             String matchId = extractMatchId(query);
             if (matchId != null) {
-                return matchService.getFinalScore(matchId).toString();
+                Map<String, Integer> score = matchService.getFinalScore(matchId);
+                String team1Id = score.keySet().toArray()[0].toString();
+                String team2Id = score.keySet().toArray()[1].toString();
+                return "The score for match " + matchId + " was " + score.get(team1Id) + " - " + score.get(team2Id) + ".";
             } else {
                 return "Please provide a valid match ID to get the score.";
             }
