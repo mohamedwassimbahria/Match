@@ -31,7 +31,7 @@ public class MatchService {
     private final MatchRepository matchRepository;
     private final NotificationService notificationService;
     private final MongoTemplate mongoTemplate;
-    private final ScoreManagementService scoreManagementService;
+    private final MatchProcessingService matchProcessingService;
 
     public Match createMatch(String team1Id, String team2Id, LocalDateTime date) {
         Match match = Match.builder()
@@ -115,7 +115,7 @@ public class MatchService {
         match.getEvents().add(event);
 
         if (EventType.GOAL.name().equals(event.getType())) {
-            scoreManagementService.updateScore(matchId, event.getTeamId(), 1);
+            matchProcessingService.updateScore(matchId, event.getTeamId(), 1);
             notificationService.sendNotification("Goal scored in match " + matchId + " by team " + event.getTeamId());
         } else if (EventType.RED_CARD.name().equals(event.getType())) {
             notificationService.sendNotification("Red card in match " + matchId);
@@ -132,7 +132,7 @@ public class MatchService {
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + eventId));
 
         if (EventType.GOAL.name().equals(eventToRemove.getType())) {
-            scoreManagementService.updateScore(matchId, eventToRemove.getTeamId(), -1);
+            matchProcessingService.updateScore(matchId, eventToRemove.getTeamId(), -1);
             notificationService.sendNotification("Goal cancelled in match " + matchId);
         }
 
@@ -150,14 +150,14 @@ public class MatchService {
         // Logic to recalculate score if a goal event is modified
         if (EventType.GOAL.name().equals(eventToUpdate.getType()) && !EventType.GOAL.name().equals(updatedEvent.getType())) {
             // Goal was removed
-            scoreManagementService.updateScore(matchId, eventToUpdate.getTeamId(), -1);
+            matchProcessingService.updateScore(matchId, eventToUpdate.getTeamId(), -1);
         } else if (!EventType.GOAL.name().equals(eventToUpdate.getType()) && EventType.GOAL.name().equals(updatedEvent.getType())) {
             // Goal was added
-            scoreManagementService.updateScore(matchId, updatedEvent.getTeamId(), 1);
+            matchProcessingService.updateScore(matchId, updatedEvent.getTeamId(), 1);
         } else if (EventType.GOAL.name().equals(eventToUpdate.getType()) && EventType.GOAL.name().equals(updatedEvent.getType()) && !eventToUpdate.getTeamId().equals(updatedEvent.getTeamId())) {
             // Goal team changed
-            scoreManagementService.updateScore(matchId, eventToUpdate.getTeamId(), -1);
-            scoreManagementService.updateScore(matchId, updatedEvent.getTeamId(), 1);
+            matchProcessingService.updateScore(matchId, eventToUpdate.getTeamId(), -1);
+            matchProcessingService.updateScore(matchId, updatedEvent.getTeamId(), 1);
         }
 
 
