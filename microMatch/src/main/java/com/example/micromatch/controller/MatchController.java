@@ -102,20 +102,18 @@ public class MatchController {
         return matchService.getScoreHistory(id);
     }
 
-
-    @PutMapping("/{id}/lineup")
-    public Match defineLineup(@PathVariable String id, @Valid @RequestBody DefineLineupRequest request) {
-        return matchService.defineLineup(id, request.getTeamId(), request.getPlayerIds());
-    }
-
-    @PutMapping("/{id}/substitutes")
-    public Match defineSubstitutes(@PathVariable String id, @Valid @RequestBody DefineSubstitutesRequest request) {
-        return matchService.defineSubstitutes(id, request.getTeamId(), request.getPlayerIds());
-    }
-
-    @PutMapping("/{id}/tactical-system")
-    public Match defineTacticalSystem(@PathVariable String id, @Valid @RequestBody DefineTacticalSystemRequest request) {
-        return matchService.defineTacticalSystem(id, request.getTeamId(), request.getTacticalSystem());
+    @PutMapping("/{id}/team-setup")
+    public Match teamSetup(@PathVariable String id, @Valid @RequestBody TeamSetupRequest request) {
+        switch (request.getSetupType()) {
+            case LINEUP:
+                return matchService.defineLineup(id, request.getTeamId(), request.getPlayerIds());
+            case SUBSTITUTES:
+                return matchService.defineSubstitutes(id, request.getTeamId(), request.getPlayerIds());
+            case TACTICAL_SYSTEM:
+                return matchService.defineTacticalSystem(id, request.getTeamId(), request.getTacticalSystem());
+            default:
+                throw new IllegalArgumentException("Invalid setup type");
+        }
     }
 
     @PutMapping("/{id}/assign-personnel")
