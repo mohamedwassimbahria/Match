@@ -409,4 +409,17 @@ public class MatchService {
         match.setCurrentMinute(minute);
         return matchRepository.save(match);
     }
+
+    public Match updateScoreManually(String matchId, int scoreTeam1, int scoreTeam2) {
+        Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
+        match.getScore().put(match.getTeam1Id(), scoreTeam1);
+        match.getScore().put(match.getTeam2Id(), scoreTeam2);
+        return matchRepository.save(match);
+    }
+
+    public Match updateMatchDateTime(String matchId, LocalDateTime newDateTime) {
+        Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
+        match.setDate(newDateTime);
+        return matchRepository.save(match);
+    }
 }

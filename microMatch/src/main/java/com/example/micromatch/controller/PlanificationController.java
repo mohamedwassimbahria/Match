@@ -48,14 +48,22 @@ public class PlanificationController {
         return planificationService.defineTeamArrivals(id, request.getTeamArrivals());
     }
 
-    @PutMapping("/{id}/technical-meeting")
-    public Planification planTechnicalMeeting(@PathVariable String id, @Valid @RequestBody PlanTechnicalMeetingRequest request) {
-        return planificationService.planTechnicalMeeting(id, request.getTechnicalMeeting());
-    }
-
-    @PutMapping("/{id}/press-conference")
-    public Planification planPressConference(@PathVariable String id, @Valid @RequestBody PlanPressConferenceRequest request) {
-        return planificationService.planPressConference(id, request.getPressConference());
+    @PutMapping("/{id}/update")
+    public Planification updatePlanification(@PathVariable String id, @Valid @RequestBody UpdatePlanificationRequest request) {
+        switch (request.getUpdateType()) {
+            case PRESS_CONFERENCE:
+                return planificationService.planPressConference(id, request.getPressConference());
+            case TECHNICAL_MEETING:
+                return planificationService.planTechnicalMeeting(id, request.getTechnicalMeeting());
+            case WARM_UPS:
+                return planificationService.planWarmUps(id, request.getWarmUps());
+            case DETAILS:
+                return planificationService.updatePlanificationDetails(id, request);
+            case UPDATE_DATETIME:
+                return planificationService.updateMatchDateTime(id, request.getNewDateTime());
+            default:
+                throw new IllegalArgumentException("Invalid update type");
+        }
     }
 
     @GetMapping("/{id}/full-day-schedule")
@@ -98,11 +106,6 @@ public class PlanificationController {
         return planificationService.findCatchUpDate(id, request.getCatchUpDate(), request.getReasonForChange());
     }
 
-    @PutMapping("/{id}/details")
-    public Planification updatePlanificationDetails(@PathVariable String id, @Valid @RequestBody UpdatePlanificationDetailsRequest request) {
-        return planificationService.updatePlanificationDetails(id, request);
-    }
-
     @PostMapping("/{id}/proposals")
     public Planification generateDateProposals(@PathVariable String id) {
         return planificationService.generateDateProposals(id);
@@ -111,11 +114,6 @@ public class PlanificationController {
     @PutMapping("/{id}/validate")
     public Planification validatePlanning(@PathVariable String id) {
         return planificationService.validatePlanning(id);
-    }
-
-    @PutMapping("/{id}/datetime")
-    public Planification updateMatchDateTime(@PathVariable String id, @Valid @RequestBody UpdateMatchDateTimeRequest request) {
-        return planificationService.updateMatchDateTime(id, request.getNewDateTime());
     }
 
     @GetMapping("/{id}/rest-period")
@@ -166,11 +164,6 @@ public class PlanificationController {
     @PostMapping("/{id}/notify-stakeholders")
     public void notifyStakeholders(@PathVariable String id, @Valid @RequestBody String message) {
         planificationService.notifyStakeholders(id, message);
-    }
-
-    @PutMapping("/{id}/warm-ups")
-    public Planification planWarmUps(@PathVariable String id, @Valid @RequestBody PlanWarmUpsRequest request) {
-        return planificationService.planWarmUps(id, request.getWarmUps());
     }
 
     @GetMapping("/{id}/calendar-impact")
