@@ -69,19 +69,27 @@ public class MatchController {
         return matchService.deleteEvent(id, eventId);
     }
 
-    @PutMapping("/{id}/events/{eventId}")
-    public Match updateEvent(@PathVariable String id, @PathVariable String eventId, @Valid @RequestBody UpdateEventRequest request) {
-        return matchService.updateEvent(id, eventId, request.getEvent());
-    }
-
     @GetMapping("/{id}/events")
     public Page<Match.Event> getEvents(@PathVariable String id, Pageable pageable) {
         return matchService.getEvents(id, pageable);
     }
 
-    @PutMapping("/{id}/additional-time")
-    public Match addAdditionalTime(@PathVariable String id, @Valid @RequestBody AddAdditionalTimeRequest request) {
-        return matchService.addAdditionalTime(id, request.getAdditionalTime());
+    @PutMapping("/{id}/update")
+    public Match updateMatch(@PathVariable String id, @Valid @RequestBody MatchUpdateRequest request) {
+        switch (request.getUpdateType()) {
+            case ADD_ADDITIONAL_TIME:
+                return matchService.addAdditionalTime(id, request.getAdditionalTime());
+            case UPDATE_CURRENT_MINUTE:
+                return matchService.updateCurrentMinute(id, request.getMinute());
+            case UPDATE_SCORE:
+                return matchService.updateScoreManually(id, request.getScoreTeam1(), request.getScoreTeam2());
+            case UPDATE_EVENT:
+                return matchService.updateEvent(id, request.getEventId(), request.getEvent());
+            case UPDATE_DATETIME:
+                return matchService.updateMatchDateTime(id, request.getNewDateTime());
+            default:
+                throw new IllegalArgumentException("Invalid update type");
+        }
     }
 
     @GetMapping("/{id}/score/final")
@@ -198,10 +206,5 @@ public class MatchController {
     @GetMapping("/{id}/timeline")
     public Page<Match.Event> getMatchTimeline(@PathVariable String id, Pageable pageable) {
         return matchService.getMatchTimeline(id, pageable);
-    }
-
-    @PutMapping("/{id}/current-minute")
-    public Match updateCurrentMinute(@PathVariable String id, @Valid @RequestBody UpdateCurrentMinuteRequest request) {
-        return matchService.updateCurrentMinute(id, request.getMinute());
     }
 }

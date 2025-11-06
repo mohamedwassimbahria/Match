@@ -113,11 +113,6 @@ public class PlanificationController {
         return planificationService.validatePlanning(id);
     }
 
-    @PutMapping("/{id}/datetime")
-    public Planification updateMatchDateTime(@PathVariable String id, @Valid @RequestBody UpdateMatchDateTimeRequest request) {
-        return planificationService.updateMatchDateTime(id, request.getNewDateTime());
-    }
-
     @GetMapping("/{id}/rest-period")
     public String checkTeamRestPeriod(@PathVariable String id) {
         return planificationService.checkTeamRestPeriod(id);
