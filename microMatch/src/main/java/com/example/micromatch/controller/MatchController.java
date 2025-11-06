@@ -118,9 +118,22 @@ public class MatchController {
         return matchService.defineTacticalSystem(id, request.getTeamId(), request.getTacticalSystem());
     }
 
-    @PutMapping("/{id}/captain")
-    public Match assignCaptain(@PathVariable String id, @Valid @RequestBody AssignCaptainRequest request) {
-        return matchService.assignCaptain(id, request.getTeamId(), request.getPlayerId());
+    @PutMapping("/{id}/assign-personnel")
+    public Match assignPersonnel(@PathVariable String id, @Valid @RequestBody AssignPersonnelRequest request) {
+        switch (request.getRole()) {
+            case MAIN_REFEREE:
+                return matchService.assignMainReferee(id, request.getName());
+            case ASSISTANT_REFEREE:
+                return matchService.assignAssistantReferees(id, request.getNames());
+            case FOURTH_OFFICIAL:
+                return matchService.assignFourthOfficial(id, request.getName());
+            case VAR_REFEREE:
+                return matchService.assignVarReferees(id, request.getNames());
+            case CAPTAIN:
+                return matchService.assignCaptain(id, request.getTeamId(), request.getPlayerId());
+            default:
+                throw new IllegalArgumentException("Invalid personnel role");
+        }
     }
 
     @PostMapping("/{id}/stats/collective")
@@ -151,26 +164,6 @@ public class MatchController {
     @PostMapping("/search")
     public Page<Match> searchMatches(@Valid @RequestBody SearchMatchesRequest request, Pageable pageable) {
         return matchService.searchMatches(request, pageable);
-    }
-
-    @PutMapping("/{id}/referee/main")
-    public Match assignMainReferee(@PathVariable String id, @Valid @RequestBody AssignMainRefereeRequest request) {
-        return matchService.assignMainReferee(id, request.getRefereeName());
-    }
-
-    @PutMapping("/{id}/referee/assistants")
-    public Match assignAssistantReferees(@PathVariable String id, @Valid @RequestBody AssignAssistantRefereesRequest request) {
-        return matchService.assignAssistantReferees(id, request.getAssistantReferees());
-    }
-
-    @PutMapping("/{id}/referee/fourth-official")
-    public Match assignFourthOfficial(@PathVariable String id, @Valid @RequestBody AssignFourthOfficialRequest request) {
-        return matchService.assignFourthOfficial(id, request.getFourthOfficial());
-    }
-
-    @PutMapping("/{id}/referee/var")
-    public Match assignVarReferees(@PathVariable String id, @Valid @RequestBody AssignVarRefereesRequest request) {
-        return matchService.assignVarReferees(id, request.getVarReferees());
     }
 
     @GetMapping("/today")

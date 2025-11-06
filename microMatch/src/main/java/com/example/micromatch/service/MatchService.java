@@ -315,27 +315,27 @@ public class MatchService {
         return new PageImpl<>(matches, pageable, count);
     }
 
-    public Match assignMainReferee(String matchId, String refereeName) {
+    public Match assignMainReferee(String matchId, String name) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
-        match.setMainReferee(refereeName);
+        match.setMainReferee(name);
         return matchRepository.save(match);
     }
 
-    public Match assignAssistantReferees(String matchId, List<String> assistantReferees) {
+    public Match assignAssistantReferees(String matchId, List<String> names) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
-        match.setAssistantReferees(assistantReferees);
+        match.setAssistantReferees(names);
         return matchRepository.save(match);
     }
 
-    public Match assignFourthOfficial(String matchId, String fourthOfficial) {
+    public Match assignFourthOfficial(String matchId, String name) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
-        match.setFourthOfficial(fourthOfficial);
+        match.setFourthOfficial(name);
         return matchRepository.save(match);
     }
 
-    public Match assignVarReferees(String matchId, List<String> varReferees) {
+    public Match assignVarReferees(String matchId, List<String> names) {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new ResourceNotFoundException("Match not found with id " + matchId));
-        match.setVarReferees(varReferees);
+        match.setVarReferees(names);
         return matchRepository.save(match);
     }
 
