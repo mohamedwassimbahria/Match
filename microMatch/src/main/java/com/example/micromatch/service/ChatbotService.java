@@ -33,16 +33,7 @@ public class ChatbotService {
 
     private String getNextMatchSchedule() {
         // This is a simplified implementation. A real implementation would need a way to identify the "next" match.
-        Page<Match> matches = matchService.getUpcomingMatches(Pageable.unpaged());
-        if (matches.isEmpty()) {
-            return "There are no upcoming matches scheduled.";
-        }
-        Match nextMatch = matches.getContent().get(0);
-        Page<Planification> planifications = planificationService.getPlanificationHistory(nextMatch.getId(), Pageable.unpaged());
-        if (planifications.isEmpty()) {
-            return "The next match is " + nextMatch.getTeam1Id() + " vs " + nextMatch.getTeam2Id() + ", but the schedule has not been confirmed.";
-        }
-        return "The next match is " + nextMatch.getTeam1Id() + " vs " + nextMatch.getTeam2Id() + " on " + planifications.getContent().get(0).getDatePropose();
+        return matchService.getUpcomingMatches(Pageable.unpaged()).getContent().get(0).toString();
     }
 
     private String getMatchResult(String query) {
