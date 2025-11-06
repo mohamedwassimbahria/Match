@@ -168,7 +168,7 @@ public class PlanificationService {
         return planificationRepository.save(planification);
     }
 
-    public Planification updatePlanificationDetails(String planificationId, com.example.micromatch.dto.UpdatePlanificationDetailsRequest request) {
+    public Planification updatePlanificationDetails(String planificationId, com.example.micromatch.dto.UpdatePlanificationRequest request) {
         Planification planification = planificationRepository.findById(planificationId).orElseThrow(() -> new ResourceNotFoundException("Planification not found with id " + planificationId));
         if (request.getEntryProtocol() != null) {
             planification.setEntryProtocol(request.getEntryProtocol());
