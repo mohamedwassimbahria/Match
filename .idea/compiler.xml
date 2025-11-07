@@ -15,12 +15,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.40/lombok-1.18.40.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.40/lombok-1.18.40.jar" />
         </processorPath>
         <module name="microBillet" />
         <module name="microCompetition" />
         <module name="microClub" />
-        <module name="microMatch" />
         <module name="microLocal" />
         <module name="microTransfert" />
         <module name="microUser" />
@@ -30,6 +30,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="FootballApp" target="17" />
+      <module name="microMatch" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
